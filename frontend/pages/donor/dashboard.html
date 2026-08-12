@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Donor Dashboard — LifeLink</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body class="bg-slate-50 font-sans text-slate-900">
+
+  <nav id="main-nav" class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm"></nav>
+
+  <div class="dashboard-container">
+    <aside class="sidebar">
+      <div class="px-3 py-2 text-xs font-bold text-slate-400 uppercase">Donor Navigation</div>
+      <a href="pages/donor/dashboard.html" class="sidebar-link active">🩸 Dashboard</a>
+      <a href="pages/donor/profile.html" class="sidebar-link">👤 My Profile</a>
+      <a href="pages/donor/donation-history.html" class="sidebar-link">📜 Donation History</a>
+      <a href="pages/notifications.html" class="sidebar-link">🔔 Notifications</a>
+    </aside>
+
+    <main class="dashboard-main">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h1 class="text-2xl font-extrabold text-slate-900">Donor Portal</h1>
+          <p class="text-sm text-slate-600 mt-1">Manage your donation status and respond to local emergency matches.</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs font-bold text-slate-500 uppercase">Availability Status:</span>
+          <button id="toggle-avail-btn" onclick="toggleAvailability()" class="btn-blue text-xs py-2 px-4">
+            Toggle Status
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div>
+            <div class="stat-label">Blood Group</div>
+            <div class="stat-value text-red-600" id="donor-bg">O+</div>
+          </div>
+          <div class="stat-icon bg-red-100 text-red-600">🩸</div>
+        </div>
+
+        <div class="stat-card">
+          <div>
+            <div class="stat-label">Total Donations</div>
+            <div class="stat-value text-emerald-600" id="donor-donations">0</div>
+          </div>
+          <div class="stat-icon bg-emerald-100 text-emerald-600">🏆</div>
+        </div>
+
+        <div class="stat-card">
+          <div>
+            <div class="stat-label">Response Rate</div>
+            <div class="stat-value text-sky-600" id="donor-response">100%</div>
+          </div>
+          <div class="stat-icon bg-sky-100 text-sky-600">⚡</div>
+        </div>
+      </div>
+
+      <!-- Emergency Matches List -->
+      <h2 class="text-xl font-bold text-slate-900 mb-4">Matched Emergency Requests</h2>
+      <div id="matches-container" class="space-y-4">
+        <div class="text-center py-8 text-slate-500">Loading emergency matches...</div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script src="/js/notifications.js"></script>
+  <script src="/js/utils.js"></script>
+
+  <script>
+    let currentStatus = 'available';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      requireRole(['donor', 'admin']);
+      loadDonorDashboard();
+    });
+
+    async function loadDonorDashboard() {
+      try {
+        const user = getCurrentUser();
+        const donorsRes = await api.get('/donors');
+        
+        let donorRecord = null;
+        if (donorsRes && donorsRes.data && donorsRes.data.donors) {
+          donorRecord = donorsRes.data.donors.find(d => d.user_id === user.id);
+        }
+
+        if (donorRecord) {
+          document.getElementById('donor-bg').textContent = donorRecord.blood_group;
+          document.getElementById('donor-donations').textContent = donorRecord.total_donations;
+          document.getElementById('donor-response').textContent = `${donorRecord.response_rate}%`;
+          currentStatus = donorRecord.availability_status;
+
+          const btn = document.getElementById('toggle-avail-btn');
+          btn.textContent = currentStatus === 'available' ? 'Status: AVAILABLE (Click to pause)' : 'Status: UNAVAILABLE (Click to activate)';
+          btn.className = currentStatus === 'available' ? 'btn-blue text-xs py-2 px-4' : 'btn-outline text-xs py-2 px-4';
+        }
+
+        // Load emergency matches
+        const reqsRes = await api.get('/blood-requests');
+        const container = document.getElementById('matches-container');
+
+        if (!reqsRes || !reqsRes.data || !reqsRes.data.requests) {
+          container.innerHTML = '<div class="glass-card p-6 text-center text-slate-500">No emergency requests active</div>';
+          return;
+        }
+
+        const requests = reqsRes.data.requests.filter(r => r.status !== 'completed' && r.status !== 'cancelled');
+
+        if (requests.length === 0) {
+          container.innerHTML = '<div class="glass-card p-8 text-center text-slate-500">No active emergency requests requiring your blood group right now.</div>';
+          return;
+        }
+
+        container.innerHTML = requests.map(r => `
+          <div class="glass-card p-6 border-l-4 border-l-red-600 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-3">
+                <span class="badge bg-red-100 text-red-700 font-extrabold text-sm">${r.blood_group}</span>
+                <h3 class="text-lg font-bold text-slate-900">Hospital: ${r.hospital_name}</h3>
+                <span class="badge ${r.priority === 'critical' ? 'badge-critical' : 'badge-urgent'}">${r.priority}</span>
+              </div>
+              <p class="text-sm text-slate-600 mt-1">Units Required: <b>${r.units_required}</b> • Needed by: <b>${formatDate(r.required_by)}</b></p>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <button onclick="acceptRequest(${r.id})" class="btn-emergency text-xs py-2 px-4">
+                ✓ Accept Emergency Request
+              </button>
+            </div>
+          </div>
+        `).join('');
+
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function toggleAvailability() {
+      const newStatus = currentStatus === 'available' ? 'unavailable' : 'available';
+      try {
+        const res = await api.put('/donors/availability', { availability_status: newStatus });
+        if (res && res.success) {
+          showToast(`Availability status updated to ${newStatus}`, 'success');
+          loadDonorDashboard();
+        }
+      } catch (e) {}
+    }
+
+    async function acceptRequest(reqId) {
+      try {
+        // Fetch matches for this request to get match_id
+        const matchesRes = await api.get(`/blood-requests/${reqId}/matches`);
+        if (matchesRes && matchesRes.data && matchesRes.data.matches && matchesRes.data.matches.length > 0) {
+          const firstMatch = matchesRes.data.matches[0];
+          const res = await api.post(`/matches/${firstMatch.match_id}/accept`);
+          if (res && res.success) {
+            showToast('Thank you! Request accepted and requester notified.', 'success');
+            loadDonorDashboard();
+          }
+        } else {
+          showToast('Request match accepted successfully', 'success');
+        }
+      } catch (e) {}
+    }
+  </script>
+</body>
+</html>

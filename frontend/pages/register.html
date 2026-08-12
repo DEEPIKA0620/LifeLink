@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register Account — LifeLink</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body class="bg-slate-50 font-sans text-slate-900">
+
+  <nav id="main-nav" class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm"></nav>
+
+  <main class="max-w-xl mx-auto py-12 px-4">
+    <div class="glass-card p-8">
+      <div class="text-center mb-8">
+        <h1 class="text-2xl font-extrabold text-slate-900">Create LifeLink Account</h1>
+        <p class="text-xs text-slate-500 mt-1">Select your account role to get started</p>
+      </div>
+
+      <form id="register-form" class="space-y-4">
+        <!-- Role Selection -->
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Select Account Type</label>
+          <select id="reg-role" class="w-full p-3 border border-slate-300 rounded-lg font-bold text-slate-900 bg-slate-50">
+            <option value="patient">Patient (Need Blood/Medicine)</option>
+            <option value="donor">Blood Donor (Voluntary Donor)</option>
+            <option value="hospital">Hospital / Blood Bank</option>
+            <option value="pharmacy">Pharmacy</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Full Name</label>
+            <input type="text" id="reg-name" required placeholder="John Doe" class="w-full p-3 border border-slate-300 rounded-lg">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Email Address</label>
+            <input type="email" id="reg-email" required placeholder="user@example.com" class="w-full p-3 border border-slate-300 rounded-lg">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Phone Number</label>
+            <input type="tel" id="reg-phone" required placeholder="+91 9876543210" class="w-full p-3 border border-slate-300 rounded-lg">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">City</label>
+            <input type="text" id="reg-city" required value="Bengaluru" class="w-full p-3 border border-slate-300 rounded-lg">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Full Street Address</label>
+          <input type="text" id="reg-address" required placeholder="123 Health Street, Indiranagar" class="w-full p-3 border border-slate-300 rounded-lg">
+        </div>
+
+        <!-- DONOR SPECIFIC FIELDS -->
+        <div id="donor-fields" class="hidden p-4 bg-red-50/50 border border-red-200 rounded-xl space-y-3">
+          <h4 class="text-xs font-bold text-red-700 uppercase">Donor Profile Information</h4>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700">Blood Group</label>
+              <select id="reg-blood-group" class="w-full p-2.5 border border-slate-300 rounded-lg font-bold">
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700">Date of Birth</label>
+              <input type="date" id="reg-dob" value="1995-05-15" class="w-full p-2.5 border border-slate-300 rounded-lg">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700">Last Donation Date (Optional)</label>
+            <input type="date" id="reg-last-donation" class="w-full p-2.5 border border-slate-300 rounded-lg">
+          </div>
+        </div>
+
+        <!-- HOSPITAL SPECIFIC FIELDS -->
+        <div id="hospital-fields" class="hidden p-4 bg-blue-50/50 border border-blue-200 rounded-xl space-y-3">
+          <h4 class="text-xs font-bold text-blue-700 uppercase">Hospital Information</h4>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700">Hospital Name</label>
+            <input type="text" id="reg-hospital-name" placeholder="City General Hospital" class="w-full p-2.5 border border-slate-300 rounded-lg">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700">Medical Registration Number</label>
+            <input type="text" id="reg-hospital-reg" placeholder="REG-KA-2026-001" class="w-full p-2.5 border border-slate-300 rounded-lg">
+          </div>
+        </div>
+
+        <!-- PHARMACY SPECIFIC FIELDS -->
+        <div id="pharmacy-fields" class="hidden p-4 bg-emerald-50/50 border border-emerald-200 rounded-xl space-y-3">
+          <h4 class="text-xs font-bold text-emerald-700 uppercase">Pharmacy Details</h4>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700">Pharmacy Name</label>
+            <input type="text" id="reg-pharmacy-name" placeholder="Care Pharmacy" class="w-full p-2.5 border border-slate-300 rounded-lg">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700">Opening Time</label>
+              <input type="time" id="reg-open-time" value="08:00" class="w-full p-2.5 border border-slate-300 rounded-lg">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700">Closing Time</label>
+              <input type="time" id="reg-close-time" value="22:00" class="w-full p-2.5 border border-slate-300 rounded-lg">
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Password</label>
+            <input type="password" id="reg-password" required minlength="6" placeholder="••••••••" class="w-full p-3 border border-slate-300 rounded-lg">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Confirm Password</label>
+            <input type="password" id="reg-confirm-password" required minlength="6" placeholder="••••••••" class="w-full p-3 border border-slate-300 rounded-lg">
+          </div>
+        </div>
+
+        <button type="submit" class="w-full btn-blue py-3.5 font-bold text-base mt-2 shadow-md">
+          Complete Registration
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/navigation.js"></script>
+
+  <script>
+    const roleSelect = document.getElementById('reg-role');
+    const donorFields = document.getElementById('donor-fields');
+    const hospitalFields = document.getElementById('hospital-fields');
+    const pharmacyFields = document.getElementById('pharmacy-fields');
+
+    function updateRoleFields() {
+      const role = roleSelect.value;
+      donorFields.classList.toggle('hidden', role !== 'donor');
+      hospitalFields.classList.toggle('hidden', role !== 'hospital');
+      pharmacyFields.classList.toggle('hidden', role !== 'pharmacy');
+    }
+
+    roleSelect.addEventListener('change', updateRoleFields);
+
+    // Preselect role if passed in URL query
+    const urlParams = new URLSearchParams(window.location.search);
+    const roleParam = urlParams.get('role');
+    if (roleParam && ['patient', 'donor', 'hospital', 'pharmacy'].includes(roleParam)) {
+      roleSelect.value = roleParam;
+    }
+    updateRoleFields();
+
+    document.getElementById('register-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const pass = document.getElementById('reg-password').value;
+      const confirmPass = document.getElementById('reg-confirm-password').value;
+
+      if (pass !== confirmPass) {
+        showToast('Passwords do not match', 'error');
+        return;
+      }
+
+      const role = roleSelect.value;
+      const payload = {
+        full_name: document.getElementById('reg-name').value,
+        email: document.getElementById('reg-email').value,
+        phone: document.getElementById('reg-phone').value,
+        city: document.getElementById('reg-city').value,
+        address: document.getElementById('reg-address').value,
+        role: role,
+        password: pass,
+        confirm_password: confirmPass,
+        latitude: 12.9716,
+        longitude: 77.5946
+      };
+
+      if (role === 'donor') {
+        payload.blood_group = document.getElementById('reg-blood-group').value;
+        payload.date_of_birth = document.getElementById('reg-dob').value;
+        payload.last_donation_date = document.getElementById('reg-last-donation').value || null;
+      } else if (role === 'hospital') {
+        payload.hospital_name = document.getElementById('reg-hospital-name').value || payload.full_name;
+        payload.registration_number = document.getElementById('reg-hospital-reg').value || 'REG-PENDING';
+      } else if (role === 'pharmacy') {
+        payload.pharmacy_name = document.getElementById('reg-pharmacy-name').value || payload.full_name;
+        payload.opening_time = document.getElementById('reg-open-time').value;
+        payload.closing_time = document.getElementById('reg-close-time').value;
+      }
+
+      registerUser(payload);
+    });
+  </script>
+</body>
+</html>

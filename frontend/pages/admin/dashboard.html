@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal — LifeLink</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body class="bg-slate-50 font-sans text-slate-900">
+
+  <nav id="main-nav" class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm"></nav>
+
+  <div class="dashboard-container">
+    <aside class="sidebar">
+      <div class="px-3 py-2 text-xs font-bold text-slate-400 uppercase">System Admin</div>
+      <a href="pages/admin/dashboard.html" class="sidebar-link active">📊 Control Dashboard</a>
+      <a href="pages/admin/users.html" class="sidebar-link">👥 Manage Users</a>
+      <a href="pages/admin/donors.html" class="sidebar-link">🩸 Verify Donors</a>
+      <a href="pages/admin/hospitals.html" class="sidebar-link">🏥 Verify Hospitals</a>
+      <a href="pages/admin/pharmacies.html" class="sidebar-link">💊 Verify Pharmacies</a>
+      <a href="pages/admin/requests.html" class="sidebar-link">🚨 Global Requests</a>
+      <a href="pages/admin/reports.html" class="sidebar-link">📈 System Reports</a>
+    </aside>
+
+    <main class="dashboard-main">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h1 class="text-2xl font-extrabold text-slate-900">LifeLink Master Administration</h1>
+          <p class="text-sm text-slate-600 mt-1">Platform analytics, verification controls, and audit monitoring.</p>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div>
+            <div class="stat-label">Total Users</div>
+            <div class="stat-value text-slate-900" id="adm-users">0</div>
+          </div>
+          <div class="stat-icon bg-slate-100 text-slate-700">👥</div>
+        </div>
+
+        <div class="stat-card">
+          <div>
+            <div class="stat-label">Registered Donors</div>
+            <div class="stat-value text-red-600" id="adm-donors">0</div>
+          </div>
+          <div class="stat-icon bg-red-100 text-red-600">🩸</div>
+        </div>
+
+        <div class="stat-card">
+          <div>
+            <div class="stat-label">Available Donors</div>
+            <div class="stat-value text-emerald-600" id="adm-avail-donors">0</div>
+          </div>
+          <div class="stat-icon bg-emerald-100 text-emerald-600">✅</div>
+        </div>
+
+        <div class="stat-card">
+          <div>
+            <div class="stat-label">Hospitals</div>
+            <div class="stat-value text-sky-600" id="adm-hospitals">0</div>
+          </div>
+          <div class="stat-icon bg-sky-100 text-sky-600">🏥</div>
+        </div>
+
+        <div class="stat-card">
+          <div>
+            <div class="stat-label">Pharmacies</div>
+            <div class="stat-value text-emerald-600" id="adm-pharmacies">0</div>
+          </div>
+          <div class="stat-icon bg-emerald-100 text-emerald-600">💊</div>
+        </div>
+
+        <div class="stat-card">
+          <div>
+            <div class="stat-label">Active Requests</div>
+            <div class="stat-value text-red-600" id="adm-requests">0</div>
+          </div>
+          <div class="stat-icon bg-red-100 text-red-600">🚨</div>
+        </div>
+      </div>
+
+      <!-- Distribution Metrics Summary Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+        <div class="glass-card p-6">
+          <h3 class="font-bold text-slate-900 text-lg mb-4">Blood Group Distribution</h3>
+          <div id="chart-bg-container" class="space-y-2 text-sm">
+            <p class="text-slate-500">Loading metrics...</p>
+          </div>
+        </div>
+
+        <div class="glass-card p-6">
+          <h3 class="font-bold text-slate-900 text-lg mb-4">Requests Priority Summary</h3>
+          <div id="chart-priority-container" class="space-y-2 text-sm">
+            <p class="text-slate-500">Loading metrics...</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script src="/js/utils.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      requireRole(['admin']);
+      loadAdminStats();
+    });
+
+    async function loadAdminStats() {
+      try {
+        const res = await api.get('/admin/dashboard');
+        if (res && res.data && res.data.stats) {
+          const s = res.data.stats;
+          document.getElementById('adm-users').textContent = s.total_users;
+          document.getElementById('adm-donors').textContent = s.total_donors;
+          document.getElementById('adm-avail-donors').textContent = s.available_donors;
+          document.getElementById('adm-hospitals').textContent = s.total_hospitals;
+          document.getElementById('adm-pharmacies').textContent = s.total_pharmacies;
+          document.getElementById('adm-requests').textContent = s.active_requests;
+
+          // Render Group Distribution
+          const bgChart = res.data.charts.blood_group_distribution || {};
+          const bgContainer = document.getElementById('chart-bg-container');
+          bgContainer.innerHTML = Object.keys(bgChart).map(bg => `
+            <div class="flex items-center justify-between p-2 bg-slate-50 rounded">
+              <span class="font-bold text-red-600">${bg}</span>
+              <span class="font-extrabold text-slate-900">${bgChart[bg]} Donors</span>
+            </div>
+          `).join('');
+
+          // Render Priority Distribution
+          const prioChart = res.data.charts.requests_by_priority || {};
+          const prioContainer = document.getElementById('chart-priority-container');
+          prioContainer.innerHTML = Object.keys(prioChart).map(p => `
+            <div class="flex items-center justify-between p-2 bg-slate-50 rounded">
+              <span class="font-bold uppercase ${p === 'critical' ? 'text-red-600' : 'text-amber-600'}">${p}</span>
+              <span class="font-extrabold text-slate-900">${prioChart[p]} Requests</span>
+            </div>
+          `).join('');
+        }
+      } catch (e) {}
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pharmacy Dashboard — LifeLink</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body class="bg-slate-50 font-sans text-slate-900">
+
+  <nav id="main-nav" class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm"></nav>
+
+  <div class="dashboard-container">
+    <aside class="sidebar">
+      <div class="px-3 py-2 text-xs font-bold text-slate-400 uppercase">Pharmacy Portal</div>
+      <a href="pages/pharmacy/dashboard.html" class="sidebar-link active">💊 Dashboard</a>
+      <a href="pages/pharmacy/medicine-stock.html" class="sidebar-link">📦 Medicine Inventory</a>
+      <a href="pages/notifications.html" class="sidebar-link">🔔 Notifications</a>
+    </aside>
+
+    <main class="dashboard-main">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h1 class="text-2xl font-extrabold text-slate-900">Pharmacy Inventory Portal</h1>
+          <p class="text-sm text-slate-600 mt-1">Manage medicine stock and prices available on Medicine Locator.</p>
+        </div>
+        <a href="pages/pharmacy/medicine-stock.html" class="btn-blue text-xs py-2 px-4">
+          + Add New Medicine
+        </a>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div>
+            <div class="stat-label">Total Medicines Listed</div>
+            <div class="stat-value text-slate-900" id="pharm-total-meds">0</div>
+          </div>
+          <div class="stat-icon bg-blue-100 text-blue-600">💊</div>
+        </div>
+
+        <div class="stat-card">
+          <div>
+            <div class="stat-label">In Stock</div>
+            <div class="stat-value text-emerald-600" id="pharm-in-stock">0</div>
+          </div>
+          <div class="stat-icon bg-emerald-100 text-emerald-600">✅</div>
+        </div>
+
+        <div class="stat-card">
+          <div>
+            <div class="stat-label">Low Stock</div>
+            <div class="stat-value text-amber-600" id="pharm-low-stock">0</div>
+          </div>
+          <div class="stat-icon bg-amber-100 text-amber-600">⚠️</div>
+        </div>
+
+        <div class="stat-card">
+          <div>
+            <div class="stat-label">Out of Stock</div>
+            <div class="stat-value text-red-600" id="pharm-out-stock">0</div>
+          </div>
+          <div class="stat-icon bg-red-100 text-red-600">❌</div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script src="/js/utils.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      requireRole(['pharmacy', 'admin']);
+      loadPharmacyDashboard();
+    });
+
+    async function loadPharmacyDashboard() {
+      try {
+        const res = await api.get('/medicines');
+        if (res && res.data && res.data.medicines) {
+          const meds = res.data.medicines;
+          document.getElementById('pharm-total-meds').textContent = meds.length;
+          document.getElementById('pharm-in-stock').textContent = meds.filter(m => m.availability_status === 'in_stock').length;
+          document.getElementById('pharm-low-stock').textContent = meds.filter(m => m.availability_status === 'low_stock').length;
+          document.getElementById('pharm-out-stock').textContent = meds.filter(m => m.availability_status === 'out_of_stock').length;
+        }
+      } catch (e) {}
+    }
+  </script>
+</body>
+</html>

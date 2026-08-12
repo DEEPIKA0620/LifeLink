@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Find Blood Donors — LifeLink</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body class="bg-slate-50 font-sans text-slate-900">
+
+  <nav id="main-nav" class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm"></nav>
+
+  <main class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+    <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <h1 class="text-3xl font-extrabold text-slate-900">Find Emergency Blood Donors</h1>
+        <p class="text-sm text-slate-600 mt-1">Locate compatible nearby donors ranked by our Smart Matching Algorithm.</p>
+      </div>
+      <a href="pages/emergency-request.html" class="btn-emergency text-sm">
+        <span>🚨</span> Create Official Emergency Request
+      </a>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="glass-card p-6 mb-8">
+      <form id="find-blood-form" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Blood Group</label>
+          <select id="filter-blood-group" class="w-full p-3 border border-slate-300 rounded-lg font-extrabold text-red-600">
+            <option value="O+">O+ (Positive)</option>
+            <option value="O-">O- (Universal)</option>
+            <option value="A+">A+ (Positive)</option>
+            <option value="A-">A- (Negative)</option>
+            <option value="B+">B+ (Positive)</option>
+            <option value="B-">B- (Negative)</option>
+            <option value="AB+">AB+ (Positive)</option>
+            <option value="AB-">AB- (Negative)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Search Radius</label>
+          <select id="filter-radius" class="w-full p-3 border border-slate-300 rounded-lg text-slate-900">
+            <option value="5">Within 5 km</option>
+            <option value="10" selected>Within 10 km</option>
+            <option value="25">Within 25 km</option>
+            <option value="50">Within 50 km</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">City / Region</label>
+          <input type="text" id="filter-city" value="Bengaluru" class="w-full p-3 border border-slate-300 rounded-lg text-slate-900">
+        </div>
+
+        <button type="submit" class="w-full btn-blue py-3 font-bold">
+          🔍 Search Donors
+        </button>
+      </form>
+    </div>
+
+    <!-- Map & Results Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Map Column -->
+      <div class="lg:col-span-1">
+        <div class="glass-card p-4 sticky top-24">
+          <h3 class="font-bold text-sm text-slate-700 uppercase tracking-wider mb-3">Live Interactive Map</h3>
+          <div id="map" class="h-96 rounded-xl"></div>
+        </div>
+      </div>
+
+      <!-- Results Column -->
+      <div class="lg:col-span-2 space-y-4" id="donors-results-container">
+        <!-- Results rendered dynamically -->
+      </div>
+    </div>
+
+    <div id="disclaimer-area" class="mt-8"></div>
+  </main>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/navigation.js"></script>
+  <script src="../js/location.js"></script>
+  <script src="../js/map.js"></script>
+  <script src="../js/matching.js"></script>
+  <script src="../js/notifications.js"></script>
+  <script src="/js/utils.js"></script>
+
+  <script>
+    let userCoords = { latitude: 12.9716, longitude: 77.5946 };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('disclaimer-area').innerHTML = renderMedicalDisclaimer();
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const bgParam = urlParams.get('blood_group');
+      const radParam = urlParams.get('radius');
+
+      if (bgParam) document.getElementById('filter-blood-group').value = bgParam;
+      if (radParam) document.getElementById('filter-radius').value = radParam;
+
+      getUserLocation((coords) => {
+        userCoords = coords;
+        initLeafletMap('map', coords.latitude, coords.longitude, 12);
+        executeSearch();
+      });
+
+      document.getElementById('find-blood-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        executeSearch();
+      });
+    });
+
+    async function executeSearch() {
+      const container = document.getElementById('donors-results-container');
+      container.innerHTML = '<div class="text-center py-12"><div class="animate-spin text-3xl mb-2">🩸</div><p class="text-slate-500 font-medium">Running Smart Donor Matching Engine...</p></div>';
+
+      const bg = document.getElementById('filter-blood-group').value;
+      const radius = document.getElementById('filter-radius').value;
+
+      try {
+        const res = await api.get(`/donors/nearby?lat=${userCoords.latitude}&lon=${userCoords.longitude}&blood_group=${encodeURIComponent(bg)}&radius_km=${radius}`, false);
+        
+        if (!res || !res.data || !res.data.donors || res.data.donors.length === 0) {
+          container.innerHTML = `
+            <div class="glass-card p-12 text-center">
+              <div class="text-4xl mb-3">🔍</div>
+              <h3 class="text-lg font-bold text-slate-800">No compatible donors found within ${radius} km</h3>
+              <p class="text-sm text-slate-500 mt-1 mb-4">Try increasing your search radius to 25 km or 50 km.</p>
+              <button onclick="document.getElementById('filter-radius').value='25'; executeSearch();" class="btn-outline text-sm">
+                Expand Radius to 25 km
+              </button>
+            </div>
+          `;
+          return;
+        }
+
+        const donors = res.data.donors;
+        renderMapPins(donors.map(d => ({ ...d, type: 'donor', name: d.full_name })));
+
+        container.innerHTML = donors.map(d => {
+          // Format match payload for matching.js renderer
+          const matchPayload = {
+            request_id: 0,
+            donor_id: d.id,
+            donor_name: d.full_name,
+            blood_group: d.blood_group,
+            availability_status: d.availability_status,
+            distance_km: d.distance_km,
+            estimated_minutes: d.estimated_minutes,
+            match_score: calculatePrototypeScore(d),
+            reasons: [
+              `Compatible blood group (${d.blood_group})`,
+              d.availability_status === 'available' ? 'Currently available to donate' : 'Currently marked unavailable',
+              `Located within ${d.distance_km} km`,
+              `High response rate (${d.response_rate}%)`
+            ]
+          };
+          return renderMatchCard(matchPayload);
+        }).join('');
+
+      } catch (e) {
+        container.innerHTML = `<div class="p-6 bg-red-50 text-red-600 rounded-xl">Unable to search donors. ${e.message}</div>`;
+      }
+    }
+
+    function calculatePrototypeScore(donor) {
+      let score = 30 + (donor.availability_status === 'available' ? 20 : 0);
+      if (donor.distance_km <= 2) score += 20;
+      else if (donor.distance_km <= 5) score += 18;
+      else if (donor.distance_km <= 10) score += 14;
+      else score += 8;
+
+      score += donor.response_rate >= 90 ? 10 : 6;
+      score += 10; // Travel + eligibility
+      return Math.min(score, 98);
+    }
+
+    function requestDonorNotification(reqId, donorId) {
+      if (!isAuthenticated()) {
+        showToast('Please login to request donors directly', 'warning');
+        window.location.href = 'pages/login.html';
+        return;
+      }
+      window.location.href = `pages/emergency-request.html?donor_id=${donorId}`;
+    }
+  </script>
+</body>
+</html>

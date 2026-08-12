@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Medicine Locator — LifeLink</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- IMPORTANT:
+         Since your frontend is running from /frontend/,
+         use relative paths instead of /css/... -->
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+
+    <link rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+
+<body class="bg-slate-50 text-slate-900">
+
+    <!-- NAVBAR -->
+    <nav id="main-nav"
+        class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    </nav>
+
+
+    <!-- MAIN -->
+    <main class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+
+        <!-- PAGE HEADER -->
+        <div class="mb-8">
+
+            <h1 class="text-3xl font-extrabold text-slate-900">
+                Emergency Medicine Locator
+            </h1>
+
+            <p class="text-sm text-slate-600 mt-2">
+                Find medicines available at nearby verified pharmacies.
+            </p>
+
+        </div>
+
+
+        <!-- SEARCH CARD -->
+        <div class="glass-card p-6 mb-8">
+
+            <form id="medicine-search-form"
+                class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+
+                <!-- MEDICINE -->
+                <div class="md:col-span-2">
+
+                    <label
+                        class="block text-xs font-bold text-slate-600 uppercase mb-2">
+                        Medicine or Generic Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="med-search-q"
+                        value="Paracetamol"
+                        placeholder="Example: Paracetamol"
+                        class="w-full p-3 border border-slate-300 rounded-lg font-medium"
+                        required>
+
+                </div>
+
+
+                <!-- AVAILABILITY -->
+                <div>
+
+                    <label
+                        class="block text-xs font-bold text-slate-600 uppercase mb-2">
+                        Availability
+                    </label>
+
+                    <select
+                        id="med-filter-avail"
+                        class="w-full p-3 border border-slate-300 rounded-lg">
+
+                        <option value="">
+                            All
+                        </option>
+
+                        <option value="in_stock" selected>
+                            In Stock
+                        </option>
+
+                        <option value="low_stock">
+                            Low Stock
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- SEARCH BUTTON -->
+                <button
+                    type="submit"
+                    class="btn-blue py-3 px-5 font-bold rounded-lg">
+
+                    🔍 Locate Medicine
+
+                </button>
+
+            </form>
+
+        </div>
+
+
+        <!-- SEARCH STATUS -->
+        <div id="search-status"
+            class="mb-5 text-sm text-slate-500">
+        </div>
+
+
+        <!-- RESULTS -->
+        <div id="medicine-results-container"
+            class="space-y-5">
+
+            <!-- Results appear here -->
+
+        </div>
+
+    </main>
+
+
+    <!-- JAVASCRIPT FILES -->
+
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/navigation.js"></script>
+    <script src="../js/notifications.js"></script>
+    <script src="../js/utils.js"></script>
+
+
+    <!-- MEDICINE SEARCH SCRIPT -->
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            console.log("LifeLink Medicine Locator Loaded");
+
+            const form =
+                document.getElementById("medicine-search-form");
+
+            form.addEventListener("submit", function (event) {
+
+                event.preventDefault();
+
+                searchMedicine();
+
+            });
+
+            // Automatically search Paracetamol when page opens
+            searchMedicine();
+
+        });
+
+
+        async function searchMedicine() {
+
+            const container =
+                document.getElementById(
+                    "medicine-results-container"
+                );
+
+            const status =
+                document.getElementById(
+                    "search-status"
+                );
+
+
+            const input =
+                document.getElementById(
+                    "med-search-q"
+                );
+
+
+            const availability =
+                document.getElementById(
+                    "med-filter-avail"
+                ).value;
+
+
+            const query =
+                input.value.trim();
+
+
+            if (!query) {
+
+                container.innerHTML = `
+                    <div class="bg-yellow-50 border border-yellow-200
+                                rounded-xl p-6 text-center">
+
+                        <div class="text-3xl mb-2">
+                            💊
+                        </div>
+
+                        <h3 class="font-bold text-yellow-800">
+                            Please enter a medicine name
+                        </h3>
+
+                    </div>
+                `;
+
+                return;
+            }
+
+
+            // LOADING
+
+            container.innerHTML = `
+                <div class="glass-card p-10 text-center">
+
+                    <div class="text-4xl mb-3">
+                        💊
+                    </div>
+
+                    <p class="font-semibold text-slate-600">
+                        Searching pharmacy database...
+                    </p>
+
+                </div>
+            `;
+
+
+            status.textContent =
+                `Searching for "${query}"...`;
+
+
+            try {
+
+                /*
+                 * IMPORTANT
+                 *
+                 * This is the endpoint you already
+                 * tested successfully in Swagger:
+                 *
+                 * GET /api/medicines/search?q=Paracetamol
+                 */
+
+                let endpoint =
+                    `/medicines/search?q=${encodeURIComponent(query)}`;
+
+
+                console.log(
+                    "Calling API:",
+                    endpoint
+                );
+
+
+                const response =
+                    await api.get(
+                        endpoint,
+                        false
+                    );
+
+
+                console.log(
+                    "Medicine API Response:",
+                    response
+                );
+
+
+                if (
+                    !response ||
+                    !response.data ||
+                    !response.data.medicines
+                ) {
+
+                    showNoResults(query);
+
+                    return;
+                }
+
+
+                let medicines =
+                    response.data.medicines;
+
+
+                /*
+                 * FRONTEND AVAILABILITY FILTER
+                 */
+
+                if (availability) {
+
+                    medicines =
+                        medicines.filter(
+                            medicine =>
+                                medicine.availability_status ===
+                                availability
+                        );
+
+                }
+
+
+                if (medicines.length === 0) {
+
+                    showNoResults(query);
+
+                    return;
+                }
+
+
+                status.textContent =
+                    `Found ${medicines.length} medicine result(s) for "${query}".`;
+
+
+                /*
+                 * DISPLAY RESULTS
+                 */
+
+                container.innerHTML =
+                    medicines.map(
+                        medicine =>
+                            createMedicineCard(
+                                medicine
+                            )
+                    ).join("");
+
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Medicine Search Error:",
+                    error
+                );
+
+
+                status.textContent =
+                    "Unable to connect to medicine service.";
+
+
+                container.innerHTML = `
+
+                    <div class="bg-red-50
+                                border border-red-200
+                                rounded-xl p-6">
+
+                        <div class="flex gap-3">
+
+                            <div class="text-2xl">
+                                ❌
+                            </div>
+
+                            <div>
+
+                                <h3 class="font-bold text-red-800">
+                                    Medicine search failed
+                                </h3>
+
+                                <p class="text-sm text-red-600 mt-1">
+                                    ${escapeHtml(error.message)}
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                `;
+
+            }
+
+        }
+
+
+
+        /*
+         * CREATE MEDICINE RESULT CARD
+         */
+
+        function createMedicineCard(medicine) {
+
+            const medicineName =
+                medicine.medicine_name ||
+                "Medicine";
+
+
+            const pharmacyName =
+                medicine.pharmacy_name ||
+                "Pharmacy";
+
+
+            const quantity =
+                medicine.quantity ??
+                0;
+
+
+            const unit =
+                medicine.unit ||
+                "units";
+
+
+            const price =
+                medicine.price != null
+                    ? Number(medicine.price).toFixed(2)
+                    : "N/A";
+
+
+            const phone =
+                medicine.phone ||
+                "";
+
+
+            const address =
+                medicine.address ||
+                "Address unavailable";
+
+
+            const city =
+                medicine.city ||
+                "";
+
+
+            const genericName =
+                medicine.generic_name ||
+                "Not available";
+
+
+            const category =
+                medicine.category ||
+                "General";
+
+
+            const availability =
+                medicine.availability_status ||
+                "unknown";
+
+
+            let availabilityText =
+                availability.replace(
+                    "_",
+                    " "
+                );
+
+
+            let availabilityClass =
+                "bg-slate-100 text-slate-700";
+
+
+            if (availability === "in_stock") {
+
+                availabilityClass =
+                    "bg-green-100 text-green-700";
+
+            }
+
+            else if (availability === "low_stock") {
+
+                availabilityClass =
+                    "bg-yellow-100 text-yellow-700";
+
+            }
+
+
+            return `
+
+                <div
+                    class="bg-white rounded-2xl
+                           border border-slate-200
+                           shadow-sm
+                           hover:shadow-lg
+                           transition-all
+                           p-6">
+
+                    <!-- TOP -->
+
+                    <div
+                        class="flex flex-col
+                               md:flex-row
+                               md:items-start
+                               md:justify-between
+                               gap-5">
+
+
+                        <!-- MEDICINE INFO -->
+
+                        <div class="flex-1">
+
+                            <div
+                                class="flex flex-wrap
+                                       items-center gap-3">
+
+                                <div
+                                    class="w-12 h-12
+                                           rounded-xl
+                                           bg-emerald-100
+                                           flex items-center
+                                           justify-center
+                                           text-2xl">
+
+                                    💊
+
+                                </div>
+
+
+                                <div>
+
+                                    <h2
+                                        class="text-xl
+                                               font-extrabold
+                                               text-slate-900">
+
+                                        ${escapeHtml(
+                                            pharmacyName
+                                        )}
+
+                                    </h2>
+
+                                    <p
+                                        class="text-sm
+                                               text-slate-500">
+
+                                        ${escapeHtml(
+                                            medicineName
+                                        )}
+
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- MEDICINE DETAILS -->
+
+                            <div
+                                class="mt-5
+                                       grid
+                                       grid-cols-1
+                                       sm:grid-cols-2
+                                       gap-3">
+
+
+                                <div
+                                    class="bg-slate-50
+                                           rounded-lg
+                                           p-3">
+
+                                    <p
+                                        class="text-xs
+                                               text-slate-500
+                                               uppercase
+                                               font-bold">
+
+                                        Medicine
+
+                                    </p>
+
+                                    <p
+                                        class="font-bold
+                                               text-slate-900">
+
+                                        ${escapeHtml(
+                                            medicineName
+                                        )}
+
+                                    </p>
+
+                                </div>
+
+
+                                <div
+                                    class="bg-slate-50
+                                           rounded-lg
+                                           p-3">
+
+                                    <p
+                                        class="text-xs
+                                               text-slate-500
+                                               uppercase
+                                               font-bold">
+
+                                        Generic Name
+
+                                    </p>
+
+                                    <p
+                                        class="font-semibold
+                                               text-slate-800">
+
+                                        ${escapeHtml(
+                                            genericName
+                                        )}
+
+                                    </p>
+
+                                </div>
+
+
+                                <div
+                                    class="bg-slate-50
+                                           rounded-lg
+                                           p-3">
+
+                                    <p
+                                        class="text-xs
+                                               text-slate-500
+                                               uppercase
+                                               font-bold">
+
+                                        Category
+
+                                    </p>
+
+                                    <p
+                                        class="font-semibold
+                                               text-slate-800">
+
+                                        ${escapeHtml(
+                                            category
+                                        )}
+
+                                    </p>
+
+                                </div>
+
+
+                                <div
+                                    class="bg-slate-50
+                                           rounded-lg
+                                           p-3">
+
+                                    <p
+                                        class="text-xs
+                                               text-slate-500
+                                               uppercase
+                                               font-bold">
+
+                                        Available Quantity
+
+                                    </p>
+
+                                    <p
+                                        class="font-bold
+                                               text-emerald-700">
+
+                                        ${quantity}
+                                        ${escapeHtml(unit)}
+
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- PHARMACY -->
+
+                            <div
+                                class="mt-5
+                                       border-t
+                                       border-slate-100
+                                       pt-4">
+
+                                <p
+                                    class="font-bold
+                                           text-slate-800">
+
+                                    🏥 ${escapeHtml(
+                                        pharmacyName
+                                    )}
+
+                                </p>
+
+
+                                <p
+                                    class="text-sm
+                                           text-slate-500
+                                           mt-1">
+
+                                    📍 ${escapeHtml(
+                                        address
+                                    )},
+                                    ${escapeHtml(
+                                        city
+                                    )}
+
+                                </p>
+
+
+                                ${
+                                    phone
+                                    ? `
+                                    <p
+                                        class="text-sm
+                                               text-slate-600
+                                               mt-2">
+
+                                        📞 ${escapeHtml(
+                                            phone
+                                        )}
+
+                                    </p>
+                                    `
+                                    : ""
+                                }
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- RIGHT SIDE -->
+
+                        <div
+                            class="md:w-44
+                                   text-left
+                                   md:text-right">
+
+
+                            <!-- AVAILABILITY -->
+
+                            <span
+                                class="inline-block
+                                       px-3 py-1
+                                       rounded-full
+                                       text-xs
+                                       font-bold
+                                       ${availabilityClass}">
+
+                                ${escapeHtml(
+                                    availabilityText
+                                )}
+
+                            </span>
+
+
+                            <!-- PRICE -->
+
+                            <div
+                                class="mt-4">
+
+                                <p
+                                    class="text-xs
+                                           text-slate-500
+                                           font-semibold">
+
+                                    PRICE
+
+                                </p>
+
+                                <p
+                                    class="text-3xl
+                                           font-extrabold
+                                           text-slate-900">
+
+                                    ₹${price}
+
+                                </p>
+
+                            </div>
+
+
+                            <!-- QUANTITY -->
+
+                            <p
+                                class="text-sm
+                                       font-semibold
+                                       text-slate-500
+                                       mt-2">
+
+                                ${quantity}
+                                ${escapeHtml(unit)}
+
+                            </p>
+
+
+                            <!-- CALL BUTTON -->
+
+                            ${
+                                phone
+                                ? `
+                                <a
+                                    href="tel:${phone}"
+                                    class="inline-block
+                                           mt-4
+                                           btn-blue
+                                           px-4 py-2
+                                           text-sm
+                                           font-bold">
+
+                                    📞 Call Pharmacy
+
+                                </a>
+                                `
+                                : ""
+                            }
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            `;
+
+        }
+
+
+
+        /*
+         * NO RESULTS
+         */
+
+        function showNoResults(query) {
+
+            const container =
+                document.getElementById(
+                    "medicine-results-container"
+                );
+
+
+            const status =
+                document.getElementById(
+                    "search-status"
+                );
+
+
+            status.textContent =
+                `No results found for "${query}".`;
+
+
+            container.innerHTML = `
+
+                <div
+                    class="bg-white
+                           border border-slate-200
+                           rounded-2xl
+                           p-12
+                           text-center
+                           shadow-sm">
+
+                    <div class="text-5xl mb-4">
+                        💊
+                    </div>
+
+                    <h2
+                        class="text-xl
+                               font-bold
+                               text-slate-800">
+
+                        No Medicine Found
+
+                    </h2>
+
+                    <p
+                        class="text-sm
+                               text-slate-500
+                               mt-2">
+
+                        We couldn't find
+                        "${escapeHtml(query)}"
+                        in the available pharmacy database.
+
+                    </p>
+
+                    <p
+                        class="text-sm
+                               text-slate-500
+                               mt-1">
+
+                        Try another medicine name
+                        or generic name.
+
+                    </p>
+
+                </div>
+
+            `;
+
+        }
+
+
+
+        /*
+         * BASIC HTML ESCAPE
+         */
+
+        function escapeHtml(value) {
+
+            return String(value)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+
+        }
+
+    </script>
+
+</body>
+
+</html>

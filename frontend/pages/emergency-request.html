@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Emergency Request — LifeLink</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body class="bg-slate-50 font-sans text-slate-900">
+
+  <nav id="main-nav" class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm"></nav>
+
+  <main class="max-w-3xl mx-auto py-12 px-4">
+    <!-- Visual Alert Banner for Critical Mode -->
+    <div id="critical-alert-banner" class="hidden mb-6 p-4 bg-red-600 text-white rounded-xl shadow-lg border-2 border-red-700 animate-pulse flex items-center gap-3">
+      <span class="text-3xl">🚨</span>
+      <div>
+        <h3 class="font-extrabold text-lg uppercase tracking-wide">CRITICAL EMERGENCY REQUEST MODE ACTIVE</h3>
+        <p class="text-xs text-red-100">Top prioritized notification alert will be dispatched to nearby candidate donors immediately upon submission.</p>
+      </div>
+    </div>
+
+    <div class="glass-card p-8">
+      <div class="border-b border-slate-200 pb-6 mb-6">
+        <h1 class="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
+          <span>🩸</span> Emergency Blood Request Form
+        </h1>
+        <p class="text-xs text-slate-500 mt-1">Submit requirement details to trigger immediate Smart Donor Matching.</p>
+      </div>
+
+      <form id="emergency-form" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Blood Group Required</label>
+            <select id="req-blood-group" required class="w-full p-3 border border-slate-300 rounded-lg font-extrabold text-red-600">
+              <option value="O+">O+ (Positive)</option>
+              <option value="O-">O- (Universal)</option>
+              <option value="A+">A+ (Positive)</option>
+              <option value="A-">A- (Negative)</option>
+              <option value="B+">B+ (Positive)</option>
+              <option value="B-">B- (Negative)</option>
+              <option value="AB+">AB+ (Positive)</option>
+              <option value="AB-">AB- (Negative)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Units Required</label>
+            <input type="number" id="req-units" min="1" max="10" value="2" required class="w-full p-3 border border-slate-300 rounded-lg font-bold">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Urgency Priority</label>
+            <select id="req-priority" required class="w-full p-3 border border-slate-300 rounded-lg font-bold">
+              <option value="critical">🚨 CRITICAL (Immediate)</option>
+              <option value="urgent" selected>⚠️ URGENT (Within 6 hours)</option>
+              <option value="normal">ℹ️ NORMAL (Within 24 hours)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Hospital / Medical Center Name</label>
+            <input type="text" id="req-hospital-name" required value="Manipal Hospital Indiranagar" class="w-full p-3 border border-slate-300 rounded-lg">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Required By Date & Time</label>
+            <input type="datetime-local" id="req-required-by" required class="w-full p-3 border border-slate-300 rounded-lg font-medium">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Additional Medical Notes / Patient Ward</label>
+          <textarea id="req-notes" rows="3" placeholder="Specify ICU Ward number, patient condition, or special instructions..." class="w-full p-3 border border-slate-300 rounded-lg"></textarea>
+        </div>
+
+        <button type="submit" id="submit-btn" class="w-full btn-emergency py-4 font-extrabold text-lg justify-center shadow-lg">
+          🚨 Submit Request & Execute Matching Engine
+        </button>
+      </form>
+    </div>
+
+    <!-- Live Results Section -->
+    <div id="matching-results-area" class="mt-8 space-y-4"></div>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script src="/js/location.js"></script>
+  <script src="/js/matching.js"></script>
+  <script src="/js/notifications.js"></script>
+  <script src="/js/utils.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Set default required-by to 4 hours in future
+      const now = new Date();
+      now.setHours(now.getHours() + 4);
+      document.getElementById('req-required-by').value = now.toISOString().slice(0, 16);
+
+      const prioritySelect = document.getElementById('req-priority');
+      const banner = document.getElementById('critical-alert-banner');
+
+      prioritySelect.addEventListener('change', () => {
+        if (prioritySelect.value === 'critical') {
+          banner.classList.remove('hidden');
+        } else {
+          banner.classList.add('hidden');
+        }
+      });
+
+      document.getElementById('emergency-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        if (!isAuthenticated()) {
+          showToast('Please login to create an emergency request', 'warning');
+          window.location.href = 'pages/login.html';
+          return;
+        }
+
+        const btn = document.getElementById('submit-btn');
+        btn.disabled = true;
+        btn.innerHTML = '⏳ Matching Donors...';
+
+        const payload = {
+          blood_group: document.getElementById('req-blood-group').value,
+          units_required: parseInt(document.getElementById('req-units').value),
+          priority: document.getElementById('req-priority').value,
+          hospital_name: document.getElementById('req-hospital-name').value,
+          required_by: new Date(document.getElementById('req-required-by').value).toISOString(),
+          additional_notes: document.getElementById('req-notes').value,
+          latitude: 12.9585,
+          longitude: 77.6483
+        };
+
+        try {
+          const res = await api.post('/blood-requests', payload);
+          btn.disabled = false;
+          btn.innerHTML = '🚨 Submit Request & Execute Matching Engine';
+
+          if (res && res.success) {
+            showToast('Emergency request submitted and donors notified!', 'success');
+
+            const resultsArea = document.getElementById('matching-results-area');
+            const matches = res.data.top_matches || [];
+
+            let html = `
+              <div class="glass-card p-6 border-l-4 border-l-emerald-500 mb-6">
+                <h3 class="text-xl font-bold text-slate-900">Request #${res.data.request_id} Active</h3>
+                <p class="text-sm text-slate-600 mt-1">Found <b>${matches.length} candidate donor matches</b>. Top donors notified automatically.</p>
+                <div class="mt-4">
+                  <a href="pages/request-details.html?id=${res.data.request_id}" class="btn-blue text-sm">
+                    View Full Request Timeline & Status →
+                  </a>
+                </div>
+              </div>
+              <h3 class="text-lg font-bold text-slate-800 mb-3">Top Matched Candidates Ranked:</h3>
+            `;
+
+            if (matches.length === 0) {
+              html += `<div class="p-6 bg-slate-100 rounded-xl text-center text-slate-600">No active donors currently registered for this blood group. Stock alerts dispatched to hospitals.</div>`;
+            } else {
+              html += matches.map(m => renderMatchCard({
+                request_id: res.data.request_id,
+                donor_id: m.donor_id,
+                donor_name: m.full_name,
+                blood_group: m.blood_group,
+                availability_status: 'available',
+                distance_km: m.distance_km,
+                estimated_minutes: m.estimated_minutes,
+                match_score: m.match_score,
+                reasons: m.reasons.split(' | ')
+              })).join('');
+            }
+
+            resultsArea.innerHTML = html;
+          }
+        } catch (err) {
+          btn.disabled = false;
+          btn.innerHTML = '🚨 Submit Request & Execute Matching Engine';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

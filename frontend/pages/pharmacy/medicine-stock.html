@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Medicine Stock Management — LifeLink</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body class="bg-slate-50 font-sans text-slate-900">
+
+  <nav id="main-nav" class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm"></nav>
+
+  <div class="dashboard-container">
+    <aside class="sidebar">
+      <div class="px-3 py-2 text-xs font-bold text-slate-400 uppercase">Pharmacy Portal</div>
+      <a href="pages/pharmacy/dashboard.html" class="sidebar-link">💊 Dashboard</a>
+      <a href="pages/pharmacy/medicine-stock.html" class="sidebar-link active">📦 Medicine Inventory</a>
+      <a href="pages/notifications.html" class="sidebar-link">🔔 Notifications</a>
+    </aside>
+
+    <main class="dashboard-main">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h1 class="text-2xl font-extrabold text-slate-900">Medicine Stock Management</h1>
+          <p class="text-sm text-slate-600 mt-1">Add, edit, or update stock quantities for your pharmacy.</p>
+        </div>
+        <button onclick="toggleModal(true)" class="btn-blue text-xs py-2 px-4">
+          + Add New Medicine
+        </button>
+      </div>
+
+      <!-- Inventory Table -->
+      <div class="table-responsive">
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Medicine Name</th>
+              <th>Generic Name</th>
+              <th>Category</th>
+              <th>Quantity Available</th>
+              <th>Unit Price</th>
+              <th>Stock Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="meds-tbody">
+            <tr><td colspan="8" class="text-center py-8 text-slate-500">Loading medicines...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add Medicine Modal -->
+  <div id="add-med-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="glass-card p-6 max-w-md w-full bg-white">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+        <h3 class="font-bold text-lg text-slate-900">Add Medicine Record</h3>
+        <button onclick="toggleModal(false)" class="text-slate-400 hover:text-slate-700 text-xl font-bold">✕</button>
+      </div>
+
+      <form id="add-med-form" class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Medicine Name</label>
+          <input type="text" id="add-med-name" required placeholder="e.g. Paracetamol 650mg" class="w-full p-2.5 border border-slate-300 rounded-lg">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Generic Chemical Name</label>
+          <input type="text" id="add-generic-name" required placeholder="e.g. Acetaminophen" class="w-full p-2.5 border border-slate-300 rounded-lg">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Category</label>
+          <input type="text" id="add-category" value="Analgesics" class="w-full p-2.5 border border-slate-300 rounded-lg">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Quantity</label>
+            <input type="number" id="add-qty" min="0" value="100" required class="w-full p-2.5 border border-slate-300 rounded-lg">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Unit</label>
+            <input type="text" id="add-unit" value="strips" class="w-full p-2.5 border border-slate-300 rounded-lg">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Price (₹)</label>
+          <input type="number" step="0.01" id="add-price" min="0" value="45.00" required class="w-full p-2.5 border border-slate-300 rounded-lg">
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-200">
+          <button type="button" onclick="toggleModal(false)" class="btn-outline text-xs py-2 px-4">Cancel</button>
+          <button type="submit" class="btn-blue text-xs py-2 px-4">Save Medicine</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script src="/js/utils.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      requireRole(['pharmacy', 'admin']);
+      loadMedicineTable();
+
+      document.getElementById('add-med-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const payload = {
+          medicine_name: document.getElementById('add-med-name').value,
+          generic_name: document.getElementById('add-generic-name').value,
+          category: document.getElementById('add-category').value,
+          quantity: parseInt(document.getElementById('add-qty').value),
+          unit: document.getElementById('add-unit').value,
+          price: parseFloat(document.getElementById('add-price').value)
+        };
+
+        try {
+          const res = await api.post('/medicines', payload);
+          if (res && res.success) {
+            showToast('Medicine record added successfully!', 'success');
+            toggleModal(false);
+            loadMedicineTable();
+          }
+        } catch (err) {}
+      });
+    });
+
+    function toggleModal(show) {
+      document.getElementById('add-med-modal').classList.toggle('hidden', !show);
+    }
+
+    async function loadMedicineTable() {
+      const tbody = document.getElementById('meds-tbody');
+      try {
+        const res = await api.get('/medicines');
+        if (!res || !res.data || !res.data.medicines || res.data.medicines.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-slate-500">No medicines in stock. Click "+ Add New Medicine" above.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = res.data.medicines.map(m => `
+          <tr>
+            <td class="font-extrabold">#${m.id}</td>
+            <td class="font-bold text-slate-900">${m.medicine_name}</td>
+            <td class="text-xs text-slate-500">${m.generic_name}</td>
+            <td><span class="badge bg-slate-100 text-slate-700">${m.category}</span></td>
+            <td class="font-extrabold">${m.quantity} ${m.unit}</td>
+            <td class="font-bold text-slate-900">${formatCurrency(m.price)}</td>
+            <td><span class="badge badge-${m.availability_status}">${m.availability_status.replace('_', ' ')}</span></td>
+            <td>
+              <button onclick="deleteMedicineRecord(${m.id})" class="text-xs font-bold text-red-600 hover:underline">
+                Delete
+              </button>
+            </td>
+          </tr>
+        `).join('');
+
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-red-600">Error: ${e.message}</td></tr>`;
+      }
+    }
+
+    async function deleteMedicineRecord(id) {
+      if (!confirm('Are you sure you want to delete this medicine record?')) return;
+      try {
+        const res = await api.delete(`/medicines/${id}`);
+        if (res && res.success) {
+          showToast('Medicine deleted', 'success');
+          loadMedicineTable();
+        }
+      } catch (e) {}
+    }
+  </script>
+</body>
+</html>

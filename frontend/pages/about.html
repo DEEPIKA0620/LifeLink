@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Us — LifeLink</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body class="bg-slate-50 font-sans text-slate-900">
+
+  <nav id="main-nav" class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm"></nav>
+
+  <main class="max-w-4xl mx-auto py-16 px-4">
+    <div class="glass-card p-10 space-y-8">
+      <div class="text-center">
+        <span class="text-red-600 font-bold text-xs uppercase tracking-widest">Healthcare Technology Platform</span>
+        <h1 class="text-4xl font-extrabold text-slate-900 mt-1">About LifeLink</h1>
+        <p class="text-lg text-slate-600 mt-2">"Find Blood. Find Medicine. Save Lives."</p>
+      </div>
+
+      <div class="prose max-w-none text-slate-700 space-y-4 text-base">
+        <p>
+          LifeLink is an emergency healthcare coordination platform designed to solve critical delays in acquiring compatible blood units and essential emergency medicines during life-threatening medical situations.
+        </p>
+
+        <h3 class="text-xl font-bold text-slate-900 pt-4">Our Core Innovation</h3>
+        <p>
+          Unlike conventional directories that display static donor lists, LifeLink features an intelligent <b>Smart Emergency Donor Matching System</b>. Our backend algorithms evaluate compatible ABO/Rh blood groups, real-time donor availability, Haversine distance, travel time estimates, historical response rates, and donation eligibility to produce a transparent match score from 0 to 100.
+        </p>
+
+        <h3 class="text-xl font-bold text-slate-900 pt-4">Supported Stakeholders</h3>
+        <ul class="list-disc pl-6 space-y-2">
+          <td><b>Patients:</b> Submit emergency requests and track real-time donor acceptances.</td>
+          <td><b>Voluntary Donors:</b> Manage availability and respond to emergency requests nearby.</td>
+          <td><b>Hospitals:</b> Maintain live 8-blood group inventory and monitor low-stock thresholds.</td>
+          <td><b>Pharmacies:</b> Publish real-time medicine stock and prices for emergency locator searches.</td>
+        </ul>
+      </div>
+
+      <div id="disclaimer-area"></div>
+    </div>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script src="/js/matching.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('disclaimer-area').innerHTML = renderMedicalDisclaimer();
+    });
+  </script>
+</body>
+</html>

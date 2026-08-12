@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LifeLink — Emergency Blood & Medicine Locator System</title>
+  <meta name="description" content="Connect with nearby blood donors, hospitals and pharmacies when every second matters.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body class="bg-slate-50 font-sans text-slate-900">
+
+  <!-- NAVBAR -->
+  <nav id="main-nav" class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm"></nav>
+
+  <!-- HERO SECTION -->
+  <section class="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <div>
+        <span class="inline-block py-1 px-3 rounded-full bg-red-600/20 border border-red-500/30 text-red-400 font-bold text-xs uppercase tracking-wider mb-4">
+          🚨 24/7 Smart Emergency Coordination
+        </span>
+        <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight leading-none mb-6">
+          Find Blood.<br>
+          <span class="text-red-500">Find Medicine.</span><br>
+          Save Lives.
+        </h1>
+        <p class="text-lg sm:text-xl text-slate-300 mb-8 max-w-xl">
+          Connect with nearby verified blood donors, hospitals, and pharmacies when every second matters. Powered by our Smart Emergency Donor Matching System.
+        </p>
+        <div class="flex flex-wrap gap-4">
+          <a href="pages/find-blood.html" class="btn-blue text-base py-3.5 px-6">
+            🔍 Find Blood Now
+          </a>
+          <a href="pages/emergency-request.html" class="btn-emergency text-base py-3.5 px-6">
+            🚨 Emergency Request
+          </a>
+          <a href="pages/register.html?role=donor" class="btn-outline text-white border-slate-600 hover:bg-slate-800 text-base py-3.5 px-6">
+            🩸 Become a Donor
+          </a>
+        </div>
+      </div>
+
+      <!-- Hero Matching Card Demo Preview -->
+      <div class="glass-card p-6 bg-slate-900/80 border-slate-700 text-white shadow-2xl">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-red-500 animate-pulse"></span>
+            <span class="font-bold text-sm text-slate-300">LIVE EMERGENCY MATCHING DEMO</span>
+          </div>
+          <span class="badge bg-red-500/20 text-red-400 border-red-500/30">Priority: CRITICAL</span>
+        </div>
+
+        <div class="space-y-4">
+          <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="font-bold text-lg text-white">Ravi Kumar</h4>
+                <p class="text-xs text-slate-400">Distance: <b>2.4 km</b> • Est. Travel Time: <b>8 mins</b></p>
+              </div>
+              <div class="w-14 h-14 rounded-full border-2 border-green-500 bg-green-500/10 text-green-400 flex items-center justify-center font-extrabold text-lg">
+                92/100
+              </div>
+            </div>
+            <div class="mt-3 pt-3 border-t border-slate-700 text-xs text-slate-300 space-y-1">
+              <p class="font-semibold text-slate-400 uppercase tracking-wider">Why Recommended:</p>
+              <p>✓ Compatible blood group (O+)</p>
+              <p>✓ Currently available</p>
+              <p>✓ Located nearby (2.4 km)</p>
+              <p>✓ High response rate (95%)</p>
+              <p>✓ Recorded donation history indicates eligibility</p>
+            </div>
+          </div>
+        </div>
+
+        <p class="text-xs text-slate-400 mt-4 text-center">
+          *Scores generated strictly for emergency donor discovery and prioritization.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAP & SEARCH PREVIEW SECTION -->
+  <section class="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
+    <div class="text-center max-w-3xl mx-auto mb-12">
+      <h2 class="text-3xl font-extrabold text-slate-900">Real-Time Healthcare Map</h2>
+      <p class="text-slate-600 mt-2">Locate available blood stocks, open pharmacies, and active donors around your area.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div class="lg:col-span-2">
+        <div id="map"></div>
+      </div>
+      <div class="glass-card p-6 flex flex-col justify-between">
+        <div>
+          <h3 class="text-xl font-bold text-slate-900 mb-4">Quick Emergency Search</h3>
+          <form id="hero-search-form" class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Required Blood Group</label>
+              <select id="search-blood-group" class="w-full p-3 border border-slate-300 rounded-lg font-bold text-slate-900">
+                <option value="O+">O+ (Positive)</option>
+                <option value="O-">O- (Universal Donor)</option>
+                <option value="A+">A+ (Positive)</option>
+                <option value="A-">A- (Negative)</option>
+                <option value="B+">B+ (Positive)</option>
+                <option value="B-">B- (Negative)</option>
+                <option value="AB+">AB+ (Positive)</option>
+                <option value="AB-">AB- (Negative)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Search Radius (KM)</label>
+              <select id="search-radius" class="w-full p-3 border border-slate-300 rounded-lg text-slate-900">
+                <option value="5">Within 5 km</option>
+                <option value="10" selected>Within 10 km</option>
+                <option value="25">Within 25 km</option>
+                <option value="50">Within 50 km</option>
+              </select>
+            </div>
+            <button type="submit" class="w-full btn-blue py-3 font-bold">
+              Find Matching Donors
+            </button>
+          </form>
+        </div>
+
+        <div class="mt-6 pt-6 border-t border-slate-200 text-center">
+          <p class="text-xs text-slate-500">Need specific medicine instead?</p>
+          <a href="pages/medicine-locator.html" class="text-sm font-bold text-sky-600 hover:underline">Go to Medicine Locator →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="bg-white py-16 px-4 sm:px-6 lg:px-8 border-y border-slate-200">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <h2 class="text-3xl font-extrabold text-slate-900">How LifeLink Works</h2>
+        <p class="text-slate-600 mt-2">Connecting patients with blood donors, hospitals and pharmacies in 3 simple steps.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="glass-card p-8 text-center">
+          <div class="w-16 h-16 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center text-2xl font-extrabold mx-auto mb-6">1</div>
+          <h3 class="text-xl font-bold mb-2">Create Emergency Request</h3>
+          <p class="text-slate-600 text-sm">Submit your required blood group, units, hospital location, and urgency priority level.</p>
+        </div>
+
+        <div class="glass-card p-8 text-center">
+          <div class="w-16 h-16 rounded-2xl bg-sky-100 text-sky-600 flex items-center justify-center text-2xl font-extrabold mx-auto mb-6">2</div>
+          <h3 class="text-xl font-bold mb-2">Smart Donor Ranking</h3>
+          <p class="text-slate-600 text-sm">Our backend matching engine scores nearby candidate donors (0-100) based on compatibility, distance, availability, and response rate.</p>
+        </div>
+
+        <div class="glass-card p-8 text-center">
+          <div class="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl font-extrabold mx-auto mb-6">3</div>
+          <h3 class="text-xl font-bold mb-2">Instant Dispatch & Alert</h3>
+          <p class="text-slate-600 text-sm">Matched donors receive immediate notifications. Once a donor accepts, contact details are unlocked securely.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MEDICAL DISCLAIMER BANNER -->
+  <section class="max-w-7xl mx-auto my-12 px-4 sm:px-6 lg:px-8">
+    <div id="disclaimer-container"></div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="bg-slate-900 text-slate-400 py-12 px-4 sm:px-6 lg:px-8 border-t border-slate-800">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div>
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center text-white font-bold">✚</div>
+          <span class="text-xl font-extrabold text-white">LifeLink</span>
+        </div>
+        <p class="text-xs text-slate-400">Emergency Blood & Medicine Locator System. Fast, transparent, and life-saving healthcare coordination.</p>
+      </div>
+
+      <div>
+        <h4 class="text-white font-bold text-sm uppercase tracking-wider mb-4">Platform</h4>
+        <ul class="space-y-2 text-sm">
+          <li><a href="pages/find-blood.html" class="hover:text-white">Find Blood</a></li>
+          <li><a href="pages/medicine-locator.html" class="hover:text-white">Medicine Locator</a></li>
+          <li><a href="pages/emergency-request.html" class="hover:text-white">Emergency Request</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="text-white font-bold text-sm uppercase tracking-wider mb-4">User Roles</h4>
+        <ul class="space-y-2 text-sm">
+          <li><a href="pages/register.html?role=patient" class="hover:text-white">Patients</a></li>
+          <li><a href="pages/register.html?role=donor" class="hover:text-white">Blood Donors</a></li>
+          <li><a href="pages/register.html?role=hospital" class="hover:text-white">Hospitals</a></li>
+          <li><a href="pages/register.html?role=pharmacy" class="hover:text-white">Pharmacies</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="text-white font-bold text-sm uppercase tracking-wider mb-4">Contact & Support</h4>
+        <p class="text-xs">24/7 Emergency Helpline: <b class="text-red-400">+91 1800-LIFELINK</b></p>
+        <p class="text-xs mt-2">Email: support@lifelink.org</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/location.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/matching.js"></script>
+  <script src="js/utils.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Insert Disclaimer
+      document.getElementById('disclaimer-container').innerHTML = renderMedicalDisclaimer();
+
+      // Init Map
+      getUserLocation((coords) => {
+        initLeafletMap('map', coords.latitude, coords.longitude, 12);
+        fetchNearbyPins(coords.latitude, coords.longitude);
+      });
+
+      document.getElementById('hero-search-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const bg = document.getElementById('search-blood-group').value;
+        const rad = document.getElementById('search-radius').value;
+        window.location.href = `pages/find-blood.html?blood_group=${encodeURIComponent(bg)}&radius=${rad}`;
+      });
+    });
+
+    async function fetchNearbyPins(lat, lon) {
+      try {
+        const donorsRes = await api.get(`/donors/nearby?lat=${lat}&lon=${lon}&radius_km=15`, false);
+        const hospRes = await api.get(`/hospitals/nearby?lat=${lat}&lon=${lon}&radius_km=15`, false);
+        
+        let pins = [];
+        if (donorsRes && donorsRes.data && donorsRes.data.donors) {
+          pins = pins.concat(donorsRes.data.donors.map(d => ({ ...d, type: 'donor', name: d.full_name })));
+        }
+        if (hospRes && hospRes.data && hospRes.data.hospitals) {
+          pins = pins.concat(hospRes.data.hospitals.map(h => ({ ...h, type: 'hospital', name: h.hospital_name })));
+        }
+        renderMapPins(pins);
+      } catch (e) {
+        console.warn('Map pins load error', e);
+      }
+    }
+  </script>
+</body>
+</html>
