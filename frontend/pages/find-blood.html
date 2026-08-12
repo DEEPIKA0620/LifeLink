@@ -20,7 +20,7 @@
         <h1 class="text-3xl font-extrabold text-slate-900">Find Emergency Blood Donors</h1>
         <p class="text-sm text-slate-600 mt-1">Locate compatible nearby donors ranked by our Smart Matching Algorithm.</p>
       </div>
-      <a href="pages/emergency-request.html" class="btn-emergency text-sm">
+      <a href="emergency-request.html" class="btn-emergency text-sm">
         <span>🚨</span> Create Official Emergency Request
       </a>
     </div>
@@ -184,10 +184,10 @@
     function requestDonorNotification(reqId, donorId) {
       if (!isAuthenticated()) {
         showToast('Please login to request donors directly', 'warning');
-        window.location.href = 'pages/login.html';
+        window.location.href = 'login.html';
         return;
       }
-      window.location.href = `pages/emergency-request.html?donor_id=${donorId}`;
+      window.location.href = `emergency-request.html?donor_id=${donorId}`;
     }
   </script>
 </body>

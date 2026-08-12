@@ -17,12 +17,12 @@
     <!-- Sidebar -->
     <aside class="sidebar">
       <div class="px-3 py-2 text-xs font-bold text-slate-400 uppercase">Patient Navigation</div>
-      <a href="pages/patient/dashboard.html" class="sidebar-link active">📊 Dashboard</a>
-      <a href="pages/emergency-request.html" class="sidebar-link">🚨 New Request</a>
-      <a href="pages/find-blood.html" class="sidebar-link">🔍 Find Blood</a>
-      <a href="pages/medicine-locator.html" class="sidebar-link">💊 Find Medicine</a>
-      <a href="pages/request-history.html" class="sidebar-link">📜 Request History</a>
-      <a href="pages/notifications.html" class="sidebar-link">🔔 Notifications</a>
+      <a href="/pages/patient/dashboard.html" class="sidebar-link active">📊 Dashboard</a>
+      <a href="/pages/emergency-request.html" class="sidebar-link">🚨 New Request</a>
+      <a href="/pages/find-blood.html" class="sidebar-link">🔍 Find Blood</a>
+      <a href="/pages/medicine-locator.html" class="sidebar-link">💊 Find Medicine</a>
+      <a href="/pages/request-history.html" class="sidebar-link">📜 Request History</a>
+      <a href="/pages/notifications.html" class="sidebar-link">🔔 Notifications</a>
     </aside>
 
     <!-- Main Content -->
@@ -32,7 +32,7 @@
           <h1 class="text-2xl font-extrabold text-slate-900">Patient Emergency Dashboard</h1>
           <p class="text-sm text-slate-600 mt-1">Manage emergency requests and track matched donors.</p>
         </div>
-        <a href="pages/emergency-request.html" class="btn-emergency text-sm">
+        <a href="/pages/emergency-request.html" class="btn-emergency text-sm">
           <span>🚨</span> Emergency Request
         </a>
       </div>
@@ -109,7 +109,7 @@
             <div class="glass-card p-8 text-center">
               <h3 class="font-bold text-slate-700">No active emergency requests</h3>
               <p class="text-xs text-slate-500 mt-1 mb-4">Need urgent blood? Submit a request to trigger Smart Donor Matching.</p>
-              <a href="pages/emergency-request.html" class="btn-emergency text-xs">Create Emergency Request</a>
+              <a href="/pages/emergency-request.html" class="btn-emergency text-xs">Create Emergency Request</a>
             </div>
           `;
           return;
@@ -125,7 +125,7 @@
               </div>
               <p class="text-sm text-slate-600 mt-1">Hospital: <b>${r.hospital_name}</b> • Needed by: <b>${formatDate(r.required_by)}</b></p>
             </div>
-            <a href="pages/request-details.html?id=${r.id}" class="btn-blue text-xs py-2 px-4">
+            <a href="/pages/request-details.html?id=${r.id}" class="btn-blue text-xs py-2 px-4">
               Track Request & Matches →
             </a>
           </div>

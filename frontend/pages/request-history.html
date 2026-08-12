@@ -19,7 +19,7 @@
         <h1 class="text-3xl font-extrabold text-slate-900">Emergency Blood Requests History</h1>
         <p class="text-sm text-slate-600 mt-1">Review active, completed, and archived emergency blood requests.</p>
       </div>
-      <a href="pages/emergency-request.html" class="btn-emergency text-sm">
+      <a href="emergency-request.html" class="btn-emergency text-sm">
         <span>🚨</span> Create New Request
       </a>
     </div>
@@ -120,7 +120,7 @@
             <td>${formatDate(r.required_by)}</td>
             <td><span class="badge badge-${r.status}">${r.status.replace('_', ' ')}</span></td>
             <td>
-              <a href="pages/request-details.html?id=${r.id}" class="text-sky-600 hover:underline font-bold text-sm">
+              <a href="request-details.html?id=${r.id}" class="text-sky-600 hover:underline font-bold text-sm">
                 View Details →
               </a>
             </td>

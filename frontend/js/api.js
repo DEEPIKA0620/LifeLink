@@ -30,7 +30,7 @@ function showToast(message, type = 'success') {
  * Core HTTP Request Wrapper
  */
 async function apiRequest(endpoint, method = 'GET', body = null, authRequired = true) {
-  const url = endpoint.startswith && endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+  const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
   
   const headers = {
     'Content-Type': 'application/json',
@@ -61,7 +61,8 @@ async function apiRequest(endpoint, method = 'GET', body = null, authRequired = 
       localStorage.removeItem('lifelink_user');
       showToast('Session expired. Please login again.', 'error');
       setTimeout(() => {
-        window.location.href = 'pages/login.html';
+        const basePath = window.location.pathname.startsWith('/frontend') ? '/frontend' : '';
+        window.location.href = `${basePath}/pages/login.html`;
       }, 1500);
       return null;
     }

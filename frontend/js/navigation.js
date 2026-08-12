@@ -11,8 +11,8 @@ function renderNavbar() {
     const authenticated = isAuthenticated();
     const user = getCurrentUser();
 
-    // Base path for the frontend
-    const FRONTEND = '/frontend';
+    // Dynamic Base path for frontend depending on host environment
+    const FRONTEND = window.location.pathname.startsWith('/frontend') ? '/frontend' : '';
 
     let roleDashboardLink = '';
 
