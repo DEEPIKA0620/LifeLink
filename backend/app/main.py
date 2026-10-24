@@ -21,7 +21,9 @@ from app.routers import (
     matching,
     notifications,
     admin,
-    blood_stock
+    blood_stock,
+    locations,
+    donations
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -72,6 +74,30 @@ app.include_router(matching.router)
 app.include_router(notifications.router)
 app.include_router(admin.router)
 app.include_router(blood_stock.router)
+app.include_router(locations.router)
+app.include_router(donations.router)
+
+@app.get("/")
+def root():
+    return {
+        "status": "online",
+        "success": True,
+        "message": "LifeLink Emergency Blood & Medicine Locator System API is running",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "api_base": "/api"
+    }
+
+@app.get("/api/health")
+def health_check():
+    from app.supabase_client import is_supabase_configured
+    db_type = "postgresql" if "postgres" in settings.DATABASE_URL else "sqlite"
+    return {
+        "status": "healthy",
+        "database": db_type,
+        "supabase_configured": is_supabase_configured(),
+        "supabase_url": settings.SUPABASE_URL if is_supabase_configured() else None
+    }
 
 @app.on_event("startup")
 def auto_seed_database_if_empty():

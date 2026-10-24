@@ -17,7 +17,7 @@ def register_user(req: UserRegisterRequest, db: Session = Depends(get_db)):
     """
     Registers a new user (Patient, Donor, Hospital, or Pharmacy). Public admin registration is prohibited.
     """
-    if req.password != req.confirm_password:
+    if req.confirm_password is not None and req.password != req.confirm_password:
         raise HTTPException(status_code=400, detail="Passwords do not match")
 
     if req.role.lower() == "admin":
@@ -34,8 +34,8 @@ def register_user(req: UserRegisterRequest, db: Session = Depends(get_db)):
         phone=req.phone,
         password_hash=hash_password(req.password),
         role=req.role.lower(),
-        address=req.address,
-        city=req.city,
+        address=req.address or "",
+        city=req.city or "Bangalore",
         latitude=req.latitude or 12.9716,
         longitude=req.longitude or 77.5946,
         is_active=True
@@ -100,9 +100,17 @@ def register_user(req: UserRegisterRequest, db: Session = Depends(get_db)):
         message="Account registered successfully",
         data={
             "token": token,
+            "access_token": token,
             "user_id": new_user.id,
             "role": new_user.role,
-            "full_name": new_user.full_name
+            "full_name": new_user.full_name,
+            "email": new_user.email,
+            "user": {
+                "id": new_user.id,
+                "role": new_user.role,
+                "full_name": new_user.full_name,
+                "email": new_user.email
+            }
         }
     )
 
@@ -129,7 +137,13 @@ def login_user(req: LoginRequest, db: Session = Depends(get_db)):
             "user_id": user.id,
             "role": user.role,
             "full_name": user.full_name,
-            "email": user.email
+            "email": user.email,
+            "user": {
+                "id": user.id,
+                "role": user.role,
+                "full_name": user.full_name,
+                "email": user.email
+            }
         }
     )
 

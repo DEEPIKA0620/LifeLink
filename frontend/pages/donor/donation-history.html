@@ -5,78 +5,469 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Donation History — LifeLink</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="/css/style.css">
-  <link rel="stylesheet" href="/css/dashboard.css">
-  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="../../css/dashboard.css">
+  <link rel="stylesheet" href="../../css/responsive.css">
 </head>
 <body class="bg-slate-50 font-sans text-slate-900">
 
+  <!-- TOP NAVBAR -->
   <nav id="main-nav" class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm"></nav>
 
   <div class="dashboard-container">
+    <!-- SIDEBAR -->
     <aside class="sidebar">
-      <div class="px-3 py-2 text-xs font-bold text-slate-400 uppercase">Donor Navigation</div>
-      <a href="pages/donor/dashboard.html" class="sidebar-link">🩸 Dashboard</a>
-      <a href="pages/donor/profile.html" class="sidebar-link">👤 My Profile</a>
-      <a href="pages/donor/donation-history.html" class="sidebar-link active">📜 Donation History</a>
-      <a href="pages/notifications.html" class="sidebar-link">🔔 Notifications</a>
+      <div class="px-3 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider" id="sidebar-role-title">Donor Portal</div>
+      <a href="dashboard.html" class="sidebar-link">🩸 Dashboard</a>
+      <a href="profile.html" class="sidebar-link">👤 My Profile</a>
+      <a href="donation-history.html" class="sidebar-link active">📜 Donation History</a>
+      <a href="../notifications.html" class="sidebar-link">🔔 Notifications</a>
     </aside>
 
+    <!-- MAIN DASHBOARD CONTENT -->
     <main class="dashboard-main">
-      <h1 class="text-2xl font-extrabold text-slate-900 mb-6">Your Life-Saving Donation History</h1>
+      <!-- HEADER -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div>
+          <h1 class="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
+            <span>📜</span> Life-Saving Donation Records
+          </h1>
+          <p class="text-sm text-slate-600 mt-1">
+            Complete audit trail of voluntary donations, scheduled appointments, and verified units.
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-50 text-red-700 border border-red-200">
+            <span class="w-2 h-2 rounded-full bg-red-500"></span>
+            Verified Medical Ledger
+          </span>
+        </div>
+      </div>
 
-      <div class="table-responsive">
-        <table class="custom-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Donation Date</th>
-              <th>Blood Group</th>
-              <th>Units</th>
-              <th>Hospital / Center</th>
-              <th>Notes</th>
-            </tr>
-          </thead>
-          <tbody id="history-rows">
-            <tr><td colspan="6" class="text-center py-8 text-slate-500">Loading history...</td></tr>
-          </tbody>
-        </table>
+      <!-- KPI METRICS SUMMARY CARDS -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="stat-card p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+          <div>
+            <div class="stat-label text-xs font-bold text-slate-500 uppercase">Total Records</div>
+            <div class="stat-value text-2xl font-extrabold text-slate-900 mt-1" id="kpi-total">0</div>
+            <div class="text-[11px] text-slate-400 mt-1">All logged activities</div>
+          </div>
+          <div class="stat-icon text-xl p-2.5 rounded-lg bg-slate-100 text-slate-700">📋</div>
+        </div>
+
+        <div class="stat-card p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+          <div>
+            <div class="stat-label text-xs font-bold text-slate-500 uppercase">Completed</div>
+            <div class="stat-value text-2xl font-extrabold text-emerald-600 mt-1" id="kpi-completed">0</div>
+            <div class="text-[11px] text-emerald-700 mt-1" id="kpi-units">0 Units Donated</div>
+          </div>
+          <div class="stat-icon text-xl p-2.5 rounded-lg bg-emerald-100 text-emerald-700">✅</div>
+        </div>
+
+        <div class="stat-card p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+          <div>
+            <div class="stat-label text-xs font-bold text-slate-500 uppercase">Scheduled</div>
+            <div class="stat-value text-2xl font-extrabold text-sky-600 mt-1" id="kpi-scheduled">0</div>
+            <div class="text-[11px] text-sky-700 mt-1">Upcoming visits</div>
+          </div>
+          <div class="stat-icon text-xl p-2.5 rounded-lg bg-sky-100 text-sky-700">📅</div>
+        </div>
+
+        <div class="stat-card p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+          <div>
+            <div class="stat-label text-xs font-bold text-slate-500 uppercase">Cancelled</div>
+            <div class="stat-value text-2xl font-extrabold text-amber-600 mt-1" id="kpi-cancelled">0</div>
+            <div class="text-[11px] text-amber-700 mt-1">Rescheduled / Deferred</div>
+          </div>
+          <div class="stat-icon text-xl p-2.5 rounded-lg bg-amber-100 text-amber-700">⏹️</div>
+        </div>
+      </div>
+
+      <!-- FILTERS TOOLBAR -->
+      <div class="glass-card p-5 mb-6 border border-slate-200 shadow-sm">
+        <form id="donations-filter-form" class="space-y-4">
+          <!-- Row 1: Search, Status, Blood Group -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="md:col-span-2">
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Search Hospital / Center</label>
+              <input type="text" id="filter-search" placeholder="Search hospital name, city, or notes..." class="w-full p-2.5 text-sm border border-slate-300 rounded-lg">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Donation Status</label>
+              <select id="filter-status" class="w-full p-2.5 text-sm border border-slate-300 rounded-lg font-medium bg-white">
+                <option value="all">All Statuses</option>
+                <option value="completed" selected>Completed Only</option>
+                <option value="scheduled">Scheduled / Upcoming</option>
+                <option value="cancelled">Cancelled / Deferred</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Blood Group</label>
+              <select id="filter-blood-group" class="w-full p-2.5 text-sm border border-slate-300 rounded-lg font-bold bg-white text-red-600">
+                <option value="all" class="text-slate-800">All Blood Groups</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Row 2: Date Range, Sort, Actions -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-3 border-t border-slate-100 items-end">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">From Date</label>
+              <input type="date" id="filter-from-date" class="w-full p-2 text-sm border border-slate-300 rounded-lg bg-white">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">To Date</label>
+              <input type="date" id="filter-to-date" class="w-full p-2 text-sm border border-slate-300 rounded-lg bg-white">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Sort Order</label>
+              <select id="filter-sort" class="w-full p-2 text-sm border border-slate-300 rounded-lg font-medium bg-white">
+                <option value="newest" selected>Newest First</option>
+                <option value="oldest">Oldest First</option>
+              </select>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button type="submit" class="flex-1 btn-blue py-2 px-3 text-xs font-bold rounded-lg flex items-center justify-center gap-1">
+                <span>🔍</span> Filter
+              </button>
+              <button type="button" id="btn-reset-filters" class="btn-outline py-2 px-3 text-xs font-semibold text-slate-700 rounded-lg">
+                Reset
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- RESULTS TABLE -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6">
+        <div class="px-5 py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+          <div class="text-sm font-bold text-slate-800" id="results-count-label">
+            Loading donation records...
+          </div>
+          <div class="text-xs text-slate-500 font-mono" id="results-privacy-note">
+            Privacy Protected: Personal donor data anonymized for non-admin viewers.
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="custom-table w-full text-left text-sm">
+            <thead class="bg-slate-50 text-slate-600 text-xs uppercase font-bold border-b border-slate-200">
+              <tr>
+                <th class="py-3 px-4">Record ID</th>
+                <th class="py-3 px-4">Date</th>
+                <th class="py-3 px-4">Donor</th>
+                <th class="py-3 px-4">Blood Group</th>
+                <th class="py-3 px-4">Type</th>
+                <th class="py-3 px-4">Units</th>
+                <th class="py-3 px-4">Hospital / Center</th>
+                <th class="py-3 px-4">Status</th>
+                <th class="py-3 px-4">Details</th>
+              </tr>
+            </thead>
+            <tbody id="history-rows" class="divide-y divide-slate-100 text-slate-800">
+              <tr>
+                <td colspan="9" class="text-center py-10 text-slate-500">
+                  <div class="text-3xl mb-2 animate-spin inline-block">⏳</div>
+                  <div>Loading donation ledger...</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- PAGINATION BAR -->
+        <div class="px-5 py-3.5 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div class="text-slate-600" id="pagination-summary">
+            Page 1 of 1
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" id="btn-prev-page" class="btn-outline px-3 py-1.5 rounded font-bold text-slate-700 disabled:opacity-50" disabled>
+              ← Previous
+            </button>
+            <span id="page-num-indicator" class="font-bold text-slate-800 px-2">1</span>
+            <button type="button" id="btn-next-page" class="btn-outline px-3 py-1.5 rounded font-bold text-slate-700 disabled:opacity-50" disabled>
+              Next →
+            </button>
+          </div>
+        </div>
       </div>
     </main>
   </div>
 
-  <script src="/js/api.js"></script>
-  <script src="/js/auth.js"></script>
-  <script src="/js/navigation.js"></script>
-  <script src="/js/utils.js"></script>
+  <!-- INDIVIDUAL DONATION DETAILS MODAL -->
+  <div id="detail-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+        <h3 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+          <span>🩸</span> Donation Certificate & Audit Details
+        </h3>
+        <button type="button" onclick="closeModal()" class="text-slate-400 hover:text-slate-700 text-xl font-bold">✕</button>
+      </div>
+
+      <div class="mt-4 space-y-3.5 text-sm" id="modal-content">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div class="mt-6 pt-4 border-t border-slate-200 flex justify-end">
+        <button type="button" onclick="closeModal()" class="btn-blue py-2 px-5 text-xs font-bold rounded-lg">
+          Close Record
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../js/api.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script src="../../js/navigation.js"></script>
+  <script src="../../js/notifications.js"></script>
+  <script src="../../js/utils.js"></script>
 
   <script>
+    let currentPage = 1;
+    const pageSize = 15;
+    let totalPages = 1;
+    let currentDonationList = [];
+
     document.addEventListener('DOMContentLoaded', async () => {
-      requireRole(['donor', 'admin']);
+      const user = getCurrentUser();
+      if (!user) {
+        window.location.href = '../auth/login.html';
+        return;
+      }
+
+      // Update sidebar title if admin
+      if (user.role === 'admin') {
+        const titleElem = document.getElementById('sidebar-role-title');
+        if (titleElem) titleElem.textContent = 'Admin Ledger';
+      }
+
+      // Wire filter form
+      const filterForm = document.getElementById('donations-filter-form');
+      filterForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        currentPage = 1;
+        loadDonations();
+      });
+
+      // Wire reset button
+      document.getElementById('btn-reset-filters').addEventListener('click', () => {
+        document.getElementById('filter-search').value = '';
+        document.getElementById('filter-status').value = 'all';
+        document.getElementById('filter-blood-group').value = 'all';
+        document.getElementById('filter-from-date').value = '';
+        document.getElementById('filter-to-date').value = '';
+        document.getElementById('filter-sort').value = 'newest';
+        currentPage = 1;
+        loadDonations();
+      });
+
+      // Wire pagination buttons
+      document.getElementById('btn-prev-page').addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          loadDonations();
+        }
+      });
+
+      document.getElementById('btn-next-page').addEventListener('click', () => {
+        if (currentPage < totalPages) {
+          currentPage++;
+          loadDonations();
+        }
+      });
+
+      loadDonations();
+    });
+
+    async function loadDonations() {
       const tbody = document.getElementById('history-rows');
+      const countLabel = document.getElementById('results-count-label');
+
+      const search = document.getElementById('filter-search').value.trim();
+      const status = document.getElementById('filter-status').value;
+      const bloodGroup = document.getElementById('filter-blood-group').value;
+      const fromDate = document.getElementById('filter-from-date').value;
+      const toDate = document.getElementById('filter-to-date').value;
+      const sort = document.getElementById('filter-sort').value;
+
+      const params = new URLSearchParams();
+      params.append('page', currentPage);
+      params.append('page_size', pageSize);
+      if (status && status !== 'all') params.append('status', status);
+      if (bloodGroup && bloodGroup !== 'all') params.append('blood_group', bloodGroup);
+      if (fromDate) params.append('from_date', fromDate);
+      if (toDate) params.append('to_date', toDate);
+      if (search) params.append('search', search);
+      if (sort) params.append('sort', sort);
 
       try {
-        const res = await api.get('/donors/history');
-        if (!res || !res.data || !res.data.history || res.data.history.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-slate-500">No past donation records found.</td></tr>';
+        const res = await api.get(`/donations?${params.toString()}`);
+        if (!res || !res.data) {
+          tbody.innerHTML = '<tr><td colspan="9" class="text-center py-8 text-slate-500">No past donation records found.</td></tr>';
           return;
         }
 
-        tbody.innerHTML = res.data.history.map(h => `
-          <tr>
-            <td class="font-extrabold">#${h.id}</td>
-            <td>${formatDate(h.donation_date)}</td>
-            <td><span class="badge bg-red-100 text-red-700 font-extrabold">${h.blood_group}</span></td>
-            <td class="font-bold">${h.units} Unit(s)</td>
-            <td class="font-semibold text-slate-900">${h.hospital_name}</td>
-            <td>${h.notes || 'Emergency donation'}</td>
-          </tr>
-        `).join('');
+        const stats = res.data.stats || {};
+        document.getElementById('kpi-total').textContent = stats.total_donations || 0;
+        document.getElementById('kpi-completed').textContent = stats.completed || 0;
+        document.getElementById('kpi-units').textContent = `${stats.total_units || 0} Units Donated`;
+        document.getElementById('kpi-scheduled').textContent = stats.scheduled || 0;
+        document.getElementById('kpi-cancelled').textContent = stats.cancelled || 0;
+
+        const records = res.data.donations || [];
+        currentDonationList = records;
+        totalPages = res.data.total_pages || 1;
+        const totalCount = res.data.total || 0;
+
+        countLabel.textContent = `Showing ${records.length} of ${totalCount} recorded donations`;
+
+        // Update pagination buttons
+        document.getElementById('pagination-summary').textContent = `Showing page ${currentPage} of ${totalPages} (${totalCount} total)`;
+        document.getElementById('page-num-indicator').textContent = currentPage;
+        document.getElementById('btn-prev-page').disabled = (currentPage <= 1);
+        document.getElementById('btn-next-page').disabled = (currentPage >= totalPages);
+
+        if (records.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="9" class="text-center py-12 text-slate-500">
+                <div class="text-4xl mb-2">📋</div>
+                <div class="font-bold text-slate-700">No matching donation records found</div>
+                <div class="text-xs text-slate-400 mt-1">Try relaxing your status, blood group, or date filters.</div>
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        tbody.innerHTML = records.map(r => {
+          let statusBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-800">● Completed</span>';
+          if (r.status === 'scheduled') {
+            statusBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-sky-100 text-sky-800">⏱️ Scheduled</span>';
+          } else if (r.status === 'cancelled') {
+            statusBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-800">✕ Cancelled</span>';
+          }
+
+          return `
+            <tr class="hover:bg-slate-50/80 transition-colors">
+              <td class="py-3 px-4 font-mono font-extrabold text-slate-700">#DON-${String(r.id).padStart(4, '0')}</td>
+              <td class="py-3 px-4 font-medium whitespace-nowrap">${r.donation_date ? formatDate(r.donation_date) : 'N/A'}</td>
+              <td class="py-3 px-4 font-semibold text-slate-900">${escapeHtml(r.donor_display)}</td>
+              <td class="py-3 px-4">
+                <span class="inline-block px-2 py-0.5 bg-red-100 text-red-700 rounded font-extrabold text-xs">
+                  ${r.blood_group}
+                </span>
+              </td>
+              <td class="py-3 px-4 text-xs font-medium text-slate-600">${escapeHtml(r.donation_type)}</td>
+              <td class="py-3 px-4 font-bold text-slate-900">${r.units} Unit</td>
+              <td class="py-3 px-4">
+                <div class="font-semibold text-slate-900 text-xs">${escapeHtml(r.hospital_name)}</div>
+                <div class="text-[11px] text-slate-400">${escapeHtml(r.hospital_city)}</div>
+              </td>
+              <td class="py-3 px-4">${statusBadge}</td>
+              <td class="py-3 px-4">
+                <button type="button" onclick="viewDetails(${r.id})" class="text-xs font-bold text-blue-600 hover:text-blue-800 underline">
+                  View Record
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
 
       } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-red-600">Error loading history: ${e.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-8 text-red-600 font-semibold">Error loading donation records: ${escapeHtml(e.message)}</td></tr>`;
       }
-    });
+    }
+
+    function viewDetails(donationId) {
+      const rec = currentDonationList.find(d => d.id === donationId);
+      if (!rec) return;
+
+      const modal = document.getElementById('detail-modal');
+      const content = document.getElementById('modal-content');
+
+      let statusBadge = '<span class="px-2.5 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-800">Completed</span>';
+      if (rec.status === 'scheduled') {
+        statusBadge = '<span class="px-2.5 py-0.5 rounded text-xs font-bold bg-sky-100 text-sky-800">Scheduled Appointment</span>';
+      } else if (rec.status === 'cancelled') {
+        statusBadge = '<span class="px-2.5 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-800">Cancelled / Deferred</span>';
+      }
+
+      content.innerHTML = `
+        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-400 uppercase">Donation ID</span>
+            <span class="font-mono font-extrabold text-slate-900">#DON-${String(rec.id).padStart(4, '0')}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-400 uppercase">Status</span>
+            <span>${statusBadge}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-400 uppercase">Donation Date</span>
+            <span class="font-bold text-slate-800">${rec.donation_date ? formatDate(rec.donation_date) : 'N/A'}</span>
+          </div>
+        </div>
+
+        <div class="space-y-2 pt-2">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-slate-500 font-bold uppercase">Donor Reference:</span>
+            <span class="font-semibold text-slate-900">${escapeHtml(rec.donor_display)}</span>
+          </div>
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-slate-500 font-bold uppercase">Blood Group & Type:</span>
+            <span class="font-extrabold text-red-600">${rec.blood_group} (${escapeHtml(rec.donation_type)})</span>
+          </div>
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-slate-500 font-bold uppercase">Volume Contributed:</span>
+            <span class="font-bold text-slate-900">${rec.units} Unit (approx. 450 ml)</span>
+          </div>
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-slate-500 font-bold uppercase">Healthcare Facility:</span>
+            <span class="font-semibold text-slate-900">${escapeHtml(rec.hospital_name)}, ${escapeHtml(rec.hospital_city)}</span>
+          </div>
+          ${rec.request_id ? `
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-500 font-bold uppercase">Linked Emergency Request:</span>
+              <span class="font-mono font-bold text-red-600">REQ-#${rec.request_id}</span>
+            </div>
+          ` : ''}
+        </div>
+
+        <div class="p-3 bg-slate-50 rounded-lg border border-slate-100 text-xs text-slate-600">
+          <strong class="text-slate-800">Medical Notes:</strong><br>
+          ${escapeHtml(rec.notes || 'Voluntary regular donation performed under sterile medical conditions.')}
+        </div>
+      `;
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('detail-modal').classList.add('hidden');
+    }
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
   </script>
 </body>
 </html>

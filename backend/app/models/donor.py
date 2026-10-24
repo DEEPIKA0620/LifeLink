@@ -15,6 +15,7 @@ class Donor(Base):
     latitude = Column(Float, default=0.0)
     longitude = Column(Float, default=0.0)
     city = Column(String(100), nullable=False, index=True)
+    locality = Column(String(100), nullable=True, index=True)
     response_rate = Column(Float, default=100.0)
     total_donations = Column(Integer, default=0)
     verified = Column(Boolean, default=True)

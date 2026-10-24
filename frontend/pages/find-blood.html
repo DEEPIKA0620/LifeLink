@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Find Blood Donors — LifeLink</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="/css/style.css">
-  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/responsive.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
@@ -27,39 +27,98 @@
 
     <!-- Filter Card -->
     <div class="glass-card p-6 mb-8">
-      <form id="find-blood-form" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-        <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Blood Group</label>
-          <select id="filter-blood-group" class="w-full p-3 border border-slate-300 rounded-lg font-extrabold text-red-600">
-            <option value="O+">O+ (Positive)</option>
-            <option value="O-">O- (Universal)</option>
-            <option value="A+">A+ (Positive)</option>
-            <option value="A-">A- (Negative)</option>
-            <option value="B+">B+ (Positive)</option>
-            <option value="B-">B- (Negative)</option>
-            <option value="AB+">AB+ (Positive)</option>
-            <option value="AB-">AB- (Negative)</option>
-          </select>
+      <form id="find-blood-form" class="space-y-4">
+        <!-- Main Filters Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Blood Group</label>
+            <select id="filter-blood-group" class="w-full p-3 border border-slate-300 rounded-lg font-extrabold text-red-600">
+              <option value="ALL">🌟 All Blood Groups</option>
+              <option value="O+" selected>O+ (Positive)</option>
+              <option value="O-">O- (Universal Donor)</option>
+              <option value="A+">A+ (Positive)</option>
+              <option value="A-">A- (Negative)</option>
+              <option value="B+">B+ (Positive)</option>
+              <option value="B-">B- (Negative)</option>
+              <option value="AB+">AB+ (Positive)</option>
+              <option value="AB-">AB- (Negative)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Search Radius</label>
+            <select id="filter-radius" class="w-full p-3 border border-slate-300 rounded-lg text-slate-900 font-bold">
+              <option value="5">Within 5 km</option>
+              <option value="10">Within 10 km</option>
+              <option value="15" selected>Within 15 km</option>
+              <option value="25">Within 25 km</option>
+              <option value="50">Within 50 km</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">City / State</label>
+            <select id="filter-city" class="w-full p-3 border border-slate-300 rounded-lg text-slate-900 font-semibold">
+              <option value="Chennai">Chennai, Tamil Nadu</option>
+              <option value="Coimbatore">Coimbatore, Tamil Nadu</option>
+              <option value="Madurai">Madurai, Tamil Nadu</option>
+              <option value="Tiruchirappalli">Tiruchirappalli (Trichy), Tamil Nadu</option>
+              <option value="Salem">Salem, Tamil Nadu</option>
+              <option value="Erode">Erode, Tamil Nadu</option>
+              <option value="Tirunelveli">Tirunelveli, Tamil Nadu</option>
+              <option value="Vellore">Vellore, Tamil Nadu</option>
+              <option value="Bengaluru" selected>Bengaluru, Karnataka</option>
+              <option value="Hyderabad">Hyderabad, Telangana</option>
+              <option value="Kochi">Kochi, Kerala</option>
+              <option value="Thiruvananthapuram">Thiruvananthapuram, Kerala</option>
+              <option value="Mumbai">Mumbai, Maharashtra</option>
+              <option value="Pune">Pune, Maharashtra</option>
+              <option value="Delhi">Delhi / NCR</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Locality / Area</label>
+            <select id="filter-locality" class="w-full p-3 border border-slate-300 rounded-lg text-slate-900">
+              <option value="">All Localities in City</option>
+            </select>
+          </div>
         </div>
 
-        <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Search Radius</label>
-          <select id="filter-radius" class="w-full p-3 border border-slate-300 rounded-lg text-slate-900">
-            <option value="5">Within 5 km</option>
-            <option value="10" selected>Within 10 km</option>
-            <option value="25">Within 25 km</option>
-            <option value="50">Within 50 km</option>
-          </select>
-        </div>
+        <!-- Secondary Filters & GPS Row -->
+        <div class="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-slate-200">
+          <div class="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-600">
+            <div class="flex items-center gap-2">
+              <span>Availability:</span>
+              <select id="filter-availability" class="p-2 border border-slate-300 rounded-md text-slate-900 text-xs">
+                <option value="available" selected>Available Donors Only</option>
+                <option value="all">All Donors (Any Status)</option>
+              </select>
+            </div>
 
-        <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">City / Region</label>
-          <input type="text" id="filter-city" value="Bengaluru" class="w-full p-3 border border-slate-300 rounded-lg text-slate-900">
-        </div>
+            <div class="flex items-center gap-2">
+              <span>Sort By:</span>
+              <select id="filter-sort" class="p-2 border border-slate-300 rounded-md text-slate-900 text-xs font-bold">
+                <option value="nearest" selected>Nearest Distance First</option>
+                <option value="response_rate">Highest Response Rate</option>
+                <option value="donations">Most Donations</option>
+              </select>
+            </div>
 
-        <button type="submit" class="w-full btn-blue py-3 font-bold">
-          🔍 Search Donors
-        </button>
+            <span id="active-origin-badge" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md font-mono text-[11px]">
+              Origin: Bengaluru Central
+            </span>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <button type="button" id="btn-use-gps" class="btn-outline text-xs py-2.5 px-3 flex items-center gap-1.5 text-slate-700">
+              <span>📍</span> Use My GPS
+            </button>
+            <button type="submit" class="btn-blue text-xs py-2.5 px-6 font-bold flex items-center gap-1.5">
+              <span>🔍</span> Search Donors
+            </button>
+          </div>
+        </div>
       </form>
     </div>
 
@@ -68,8 +127,14 @@
       <!-- Map Column -->
       <div class="lg:col-span-1">
         <div class="glass-card p-4 sticky top-24">
-          <h3 class="font-bold text-sm text-slate-700 uppercase tracking-wider mb-3">Live Interactive Map</h3>
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-bold text-sm text-slate-700 uppercase tracking-wider">Live Healthcare Map</h3>
+            <span id="map-results-count" class="text-xs font-bold text-slate-500">0 Pins</span>
+          </div>
           <div id="map" class="h-96 rounded-xl"></div>
+          <p class="text-[11px] text-slate-500 mt-2 text-center">
+            *Red pins represent matching donors. Blue circle indicates your search origin.
+          </p>
         </div>
       </div>
 
@@ -88,27 +153,60 @@
   <script src="../js/location.js"></script>
   <script src="../js/map.js"></script>
   <script src="../js/matching.js"></script>
-  <script src="../js/notifications.js"></script>
-  <script src="/js/utils.js"></script>
+  <script src="../js/utils.js"></script>
 
   <script>
-    let userCoords = { latitude: 12.9716, longitude: 77.5946 };
+    let locationCatalog = [];
+    let userCoords = { latitude: 12.9716, longitude: 77.5946, label: "Bengaluru Central" };
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('disclaimer-area').innerHTML = renderMedicalDisclaimer();
 
+      // Read URL Params if coming from Hero search
       const urlParams = new URLSearchParams(window.location.search);
       const bgParam = urlParams.get('blood_group');
       const radParam = urlParams.get('radius');
+      const cityParam = urlParams.get('city');
 
       if (bgParam) document.getElementById('filter-blood-group').value = bgParam;
       if (radParam) document.getElementById('filter-radius').value = radParam;
+      if (cityParam) document.getElementById('filter-city').value = cityParam;
 
-      getUserLocation((coords) => {
-        userCoords = coords;
-        initLeafletMap('map', coords.latitude, coords.longitude, 12);
-        executeSearch();
+      // Load locations catalog
+      await loadLocationsCatalog();
+
+      // Setup city/locality change listener
+      document.getElementById('filter-city').addEventListener('change', () => {
+        updateLocalitiesDropdown();
+        updateOriginFromDropdowns();
       });
+
+      document.getElementById('filter-locality').addEventListener('change', () => {
+        updateOriginFromDropdowns();
+      });
+
+      // GPS Button
+      document.getElementById('btn-use-gps').addEventListener('click', () => {
+        getUserLocation((coords) => {
+          userCoords = {
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+            label: "GPS Location"
+          };
+          document.getElementById('active-origin-badge').textContent = `Origin: GPS (${coords.latitude.toFixed(3)}, ${coords.longitude.toFixed(3)})`;
+          if (window.leafletMap) {
+            window.leafletMap.setView([coords.latitude, coords.longitude], 12);
+          }
+          executeSearch();
+        });
+      });
+
+      // Initialize map with default selected city
+      updateLocalitiesDropdown();
+      updateOriginFromDropdowns();
+
+      initLeafletMap('map', userCoords.latitude, userCoords.longitude, 12);
+      executeSearch();
 
       document.getElementById('find-blood-form').addEventListener('submit', (e) => {
         e.preventDefault();
@@ -116,35 +214,98 @@
       });
     });
 
+    async function loadLocationsCatalog() {
+      try {
+        const res = await api.get('/locations', false);
+        if (res && res.data && res.data.cities) {
+          locationCatalog = res.data.cities;
+        }
+      } catch (e) {
+        console.warn('Could not load dynamic locations catalog', e);
+      }
+    }
+
+    function updateLocalitiesDropdown() {
+      const selectedCityName = document.getElementById('filter-city').value;
+      const localitySelect = document.getElementById('filter-locality');
+      localitySelect.innerHTML = '<option value="">All Localities in City</option>';
+
+      const cityObj = locationCatalog.find(c => c.city.toLowerCase() === selectedCityName.toLowerCase());
+      if (cityObj && cityObj.localities) {
+        cityObj.localities.forEach(loc => {
+          const opt = document.createElement('option');
+          opt.value = loc.name;
+          opt.textContent = loc.name;
+          localitySelect.appendChild(opt);
+        });
+      }
+    }
+
+    function updateOriginFromDropdowns() {
+      const cityName = document.getElementById('filter-city').value;
+      const localityName = document.getElementById('filter-locality').value;
+
+      const cityObj = locationCatalog.find(c => c.city.toLowerCase() === cityName.toLowerCase());
+      if (cityObj) {
+        if (localityName) {
+          const locObj = cityObj.localities.find(l => l.name.toLowerCase() === localityName.toLowerCase());
+          if (locObj) {
+            userCoords = { latitude: locObj.lat, longitude: locObj.lon, label: `${localityName}, ${cityName}` };
+          }
+        } else {
+          userCoords = { latitude: cityObj.center.lat, longitude: cityObj.center.lon, label: `${cityName} Central` };
+        }
+      }
+
+      document.getElementById('active-origin-badge').textContent = `Origin: ${userCoords.label}`;
+      if (window.leafletMap) {
+        window.leafletMap.setView([userCoords.latitude, userCoords.longitude], 12);
+      }
+    }
+
     async function executeSearch() {
       const container = document.getElementById('donors-results-container');
       container.innerHTML = '<div class="text-center py-12"><div class="animate-spin text-3xl mb-2">🩸</div><p class="text-slate-500 font-medium">Running Smart Donor Matching Engine...</p></div>';
 
       const bg = document.getElementById('filter-blood-group').value;
       const radius = document.getElementById('filter-radius').value;
+      const avail = document.getElementById('filter-availability').value;
+      const sort = document.getElementById('filter-sort').value;
 
       try {
-        const res = await api.get(`/donors/nearby?lat=${userCoords.latitude}&lon=${userCoords.longitude}&blood_group=${encodeURIComponent(bg)}&radius_km=${radius}`, false);
+        let endpoint = `/donors/nearby?lat=${userCoords.latitude}&lon=${userCoords.longitude}&radius_km=${radius}&availability=${avail}&sort=${sort}`;
+        if (bg && bg !== 'ALL') {
+          endpoint += `&blood_group=${encodeURIComponent(bg)}`;
+        }
+
+        const res = await api.get(endpoint, false);
         
         if (!res || !res.data || !res.data.donors || res.data.donors.length === 0) {
+          document.getElementById('map-results-count').textContent = '0 Pins';
+          renderMapPins([]);
           container.innerHTML = `
             <div class="glass-card p-12 text-center">
               <div class="text-4xl mb-3">🔍</div>
-              <h3 class="text-lg font-bold text-slate-800">No compatible donors found within ${radius} km</h3>
-              <p class="text-sm text-slate-500 mt-1 mb-4">Try increasing your search radius to 25 km or 50 km.</p>
-              <button onclick="document.getElementById('filter-radius').value='25'; executeSearch();" class="btn-outline text-sm">
-                Expand Radius to 25 km
-              </button>
+              <h3 class="text-lg font-bold text-slate-800">No compatible donors found within ${radius} km of ${userCoords.label}</h3>
+              <p class="text-sm text-slate-500 mt-1 mb-4">Try selecting "All Blood Groups", changing locality, or expanding search radius to 25 km or 50 km.</p>
+              <div class="flex justify-center gap-3">
+                <button onclick="document.getElementById('filter-radius').value='25'; executeSearch();" class="btn-outline text-xs py-2 px-4">
+                  Expand Radius to 25 km
+                </button>
+                <button onclick="document.getElementById('filter-blood-group').value='ALL'; executeSearch();" class="btn-blue text-xs py-2 px-4">
+                  Show All Blood Groups
+                </button>
+              </div>
             </div>
           `;
           return;
         }
 
         const donors = res.data.donors;
-        renderMapPins(donors.map(d => ({ ...d, type: 'donor', name: d.full_name })));
+        document.getElementById('map-results-count').textContent = `${donors.length} Donors Found`;
+        renderMapPins(donors.map(d => ({ ...d, type: 'donor', name: `${d.full_name} (${d.blood_group})` })));
 
         container.innerHTML = donors.map(d => {
-          // Format match payload for matching.js renderer
           const matchPayload = {
             request_id: 0,
             donor_id: d.id,
@@ -153,12 +314,16 @@
             availability_status: d.availability_status,
             distance_km: d.distance_km,
             estimated_minutes: d.estimated_minutes,
+            travel_time_label: d.travel_time_label,
+            locality: d.locality,
+            city: d.city,
+            total_donations: d.total_donations,
             match_score: calculatePrototypeScore(d),
             reasons: [
-              `Compatible blood group (${d.blood_group})`,
-              d.availability_status === 'available' ? 'Currently available to donate' : 'Currently marked unavailable',
-              `Located within ${d.distance_km} km`,
-              `High response rate (${d.response_rate}%)`
+              `Blood group: ${d.blood_group}`,
+              d.availability_status === 'available' ? 'Currently marked available to donate' : `Status: ${d.availability_status}`,
+              `Located ${d.distance_km} km away in ${d.locality || d.city}`,
+              `Response rate: ${d.response_rate}% with ${d.total_donations || 0} completed donations`
             ]
           };
           return renderMatchCard(matchPayload);
@@ -170,14 +335,14 @@
     }
 
     function calculatePrototypeScore(donor) {
-      let score = 30 + (donor.availability_status === 'available' ? 20 : 0);
-      if (donor.distance_km <= 2) score += 20;
-      else if (donor.distance_km <= 5) score += 18;
-      else if (donor.distance_km <= 10) score += 14;
-      else score += 8;
+      let score = 30 + (donor.availability_status === 'available' ? 25 : 5);
+      if (donor.distance_km <= 5) score += 20;
+      else if (donor.distance_km <= 10) score += 16;
+      else if (donor.distance_km <= 20) score += 12;
+      else score += 6;
 
-      score += donor.response_rate >= 90 ? 10 : 6;
-      score += 10; // Travel + eligibility
+      score += donor.response_rate >= 90 ? 12 : 6;
+      score += Math.min(10, (donor.total_donations || 0) * 2);
       return Math.min(score, 98);
     }
 

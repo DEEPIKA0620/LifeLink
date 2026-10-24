@@ -82,6 +82,7 @@ def create_blood_request(
         success=True,
         message="Emergency blood request created successfully",
         data={
+            "id": new_request.id,
             "request_id": new_request.id,
             "status": new_request.status,
             "blood_group": new_request.blood_group,
@@ -125,11 +126,11 @@ def list_blood_requests(
             "blood_group": r.blood_group,
             "units_required": r.units_required,
             "priority": r.priority,
-            "required_by": r.required_by.isoformat(),
+            "required_by": r.required_by.isoformat() if r.required_by else None,
             "status": r.status,
             "latitude": r.latitude,
             "longitude": r.longitude,
-            "created_at": r.created_at.isoformat()
+            "created_at": r.created_at.isoformat() if r.created_at else None
         })
 
     return ApiResponse(success=True, message=f"Loaded {len(results)} blood requests", data={"requests": results})
@@ -154,16 +155,16 @@ def get_blood_request_detail(id: int, db: Session = Depends(get_db)):
             "blood_group": req.blood_group,
             "units_required": req.units_required,
             "priority": req.priority,
-            "required_by": req.required_by.isoformat(),
+            "required_by": req.required_by.isoformat() if req.required_by else None,
             "status": req.status,
             "latitude": req.latitude,
             "longitude": req.longitude,
             "additional_notes": req.additional_notes,
-            "created_at": req.created_at.isoformat(),
+            "created_at": req.created_at.isoformat() if req.created_at else None,
             "timeline": [{
                 "status": sh.status,
                 "notes": sh.notes,
-                "timestamp": sh.created_at.isoformat()
+                "timestamp": sh.created_at.isoformat() if sh.created_at else None
             } for sh in status_history]
         }
     )

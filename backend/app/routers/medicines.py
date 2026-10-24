@@ -6,7 +6,7 @@ from app.dependencies import get_current_user, RoleChecker
 from app.models.user import User
 from app.models.pharmacy import Pharmacy
 from app.models.medicine import Medicine
-from app.utils.distance import calculate_haversine_distance
+from app.utils.distance import calculate_haversine_distance, estimate_travel_time_minutes, format_travel_time_label
 from app.schemas.auth import ApiResponse
 from app.schemas.medicine import MedicineCreate, MedicineUpdate, MedicineOut
 
@@ -29,6 +29,8 @@ def list_medicines(pharmacy_id: Optional[int] = None, db: Session = Depends(get_
             "medicine_name": m.medicine_name,
             "generic_name": m.generic_name,
             "category": m.category,
+            "dosage_form": getattr(m, "dosage_form", None) or "Tablet",
+            "strength": getattr(m, "strength", None) or "",
             "quantity": m.quantity,
             "unit": m.unit,
             "price": float(m.price),
@@ -39,91 +41,114 @@ def list_medicines(pharmacy_id: Optional[int] = None, db: Session = Depends(get_
 
 @router.get("/search", response_model=ApiResponse)
 def search_medicines(
-    q: str = Query(..., description="Medicine or generic name query"),
+    q: Optional[str] = Query(None, description="Medicine name, generic name, or strength query"),
     category: Optional[str] = None,
     city: Optional[str] = None,
     availability: Optional[str] = None,
+    dosage_form: Optional[str] = None,
+    strength: Optional[str] = None,
+    lat: Optional[float] = Query(None, description="Search origin latitude for distance calculation"),
+    lon: Optional[float] = Query(None, description="Search origin longitude for distance calculation"),
+    radius_km: Optional[float] = Query(None, description="Maximum search radius in km"),
+    sort: Optional[str] = Query("default", description="'nearest', 'price_asc', 'price_desc', or 'default'"),
     db: Session = Depends(get_db)
 ):
-    query = db.query(Medicine).join(Pharmacy)
-    if q:
+    """
+    Full-featured medicine search supporting name, generic name, category, strength,
+    city, availability status, and geospatial radius-based distance calculation.
+    """
+    query = db.query(Medicine).join(Pharmacy, Medicine.pharmacy_id == Pharmacy.id)
+
+    if q and q.strip():
+        term = q.strip()
         query = query.filter(
-            (Medicine.medicine_name.ilike(f"%{q}%")) |
-            (Medicine.generic_name.ilike(f"%{q}%"))
+            (Medicine.medicine_name.ilike(f"%{term}%")) |
+            (Medicine.generic_name.ilike(f"%{term}%")) |
+            (Medicine.category.ilike(f"%{term}%"))
         )
-    if category:
+
+    if category and category.lower() != "all":
         query = query.filter(Medicine.category.ilike(f"%{category}%"))
-    if availability:
-        query = query.filter(Medicine.availability_status == availability)
-    if city:
+
+    if availability and availability.lower() not in ["all", "any"]:
+        query = query.filter(Medicine.availability_status == availability.lower())
+
+    if city and city.lower() != "all":
         query = query.filter(Pharmacy.city.ilike(f"%{city}%"))
+
+    if dosage_form and dosage_form.lower() != "all":
+        query = query.filter(Medicine.dosage_form.ilike(f"%{dosage_form}%"))
+
+    if strength:
+        query = query.filter(Medicine.strength.ilike(f"%{strength}%"))
 
     matches = query.all()
     results = []
+
     for m in matches:
         pharmacy = db.query(Pharmacy).filter(Pharmacy.id == m.pharmacy_id).first()
+        dist = None
+        est_mins = None
+        travel_label = None
+
+        if lat is not None and lon is not None and pharmacy and pharmacy.latitude and pharmacy.longitude:
+            dist = calculate_haversine_distance(lat, lon, pharmacy.latitude, pharmacy.longitude)
+            if radius_km is not None and dist > radius_km:
+                continue
+            est_mins = estimate_travel_time_minutes(dist)
+            travel_label = format_travel_time_label(est_mins)
+
         results.append({
             "id": m.id,
             "pharmacy_id": m.pharmacy_id,
             "pharmacy_name": pharmacy.pharmacy_name if pharmacy else "Pharmacy",
-            "phone": pharmacy.phone if pharmacy else "",
-            "address": pharmacy.address if pharmacy else "",
+            "phone": pharmacy.phone if pharmacy else "+91 9900000000",
+            "address": pharmacy.address if pharmacy else "Branch Address",
             "city": pharmacy.city if pharmacy else "Bengaluru",
             "opening_time": pharmacy.opening_time if pharmacy else "08:00",
             "closing_time": pharmacy.closing_time if pharmacy else "22:00",
             "medicine_name": m.medicine_name,
             "generic_name": m.generic_name,
             "category": m.category,
+            "dosage_form": getattr(m, "dosage_form", None) or "Tablet",
+            "strength": getattr(m, "strength", None) or "",
             "quantity": m.quantity,
             "unit": m.unit,
             "price": float(m.price),
             "availability_status": m.availability_status,
+            "distance_km": dist,
+            "estimated_minutes": est_mins,
+            "travel_time_label": travel_label,
             "latitude": pharmacy.latitude if pharmacy else 12.9716,
-            "longitude": pharmacy.longitude if pharmacy else 77.5946
+            "longitude": pharmacy.longitude if pharmacy else 77.5946,
+            "last_updated": m.last_updated.isoformat() if m.last_updated else None
         })
 
-    return ApiResponse(success=True, message=f"Found {len(results)} medicines matching query", data={"medicines": results})
+    # Sort results
+    if sort == "price_asc":
+        results.sort(key=lambda x: x["price"])
+    elif sort == "price_desc":
+        results.sort(key=lambda x: -x["price"])
+    elif sort == "nearest" and lat is not None and lon is not None:
+        results.sort(key=lambda x: (x["distance_km"] if x["distance_km"] is not None else 9999))
+    elif lat is not None and lon is not None:
+        results.sort(key=lambda x: (x["distance_km"] if x["distance_km"] is not None else 9999))
+
+    return ApiResponse(
+        success=True,
+        message=f"Found {len(results)} medicines matching query",
+        data={"medicines": results, "total_found": len(results)}
+    )
 
 @router.get("/nearby", response_model=ApiResponse)
 def search_nearby_medicines(
-    q: str = Query(..., description="Medicine query"),
+    q: Optional[str] = Query(None, description="Medicine query"),
     lat: float = Query(...),
     lon: float = Query(...),
     radius_km: float = Query(25.0),
     db: Session = Depends(get_db)
 ):
-    query = db.query(Medicine).filter(
-        (Medicine.medicine_name.ilike(f"%{q}%")) |
-        (Medicine.generic_name.ilike(f"%{q}%"))
-    )
-    medicines = query.all()
-    nearby = []
-    for m in medicines:
-        pharmacy = db.query(Pharmacy).filter(Pharmacy.id == m.pharmacy_id).first()
-        if pharmacy:
-            dist = calculate_haversine_distance(lat, lon, pharmacy.latitude, pharmacy.longitude)
-            if dist <= radius_km:
-                nearby.append({
-                    "id": m.id,
-                    "pharmacy_id": m.pharmacy_id,
-                    "pharmacy_name": pharmacy.pharmacy_name,
-                    "phone": pharmacy.phone,
-                    "address": pharmacy.address,
-                    "city": pharmacy.city,
-                    "medicine_name": m.medicine_name,
-                    "generic_name": m.generic_name,
-                    "category": m.category,
-                    "quantity": m.quantity,
-                    "unit": m.unit,
-                    "price": float(m.price),
-                    "availability_status": m.availability_status,
-                    "distance_km": dist,
-                    "latitude": pharmacy.latitude,
-                    "longitude": pharmacy.longitude
-                })
-
-    nearby.sort(key=lambda x: x["distance_km"])
-    return ApiResponse(success=True, message=f"Found {len(nearby)} nearby medicine matches within {radius_km} km", data={"medicines": nearby})
+    return search_medicines(q=q, lat=lat, lon=lon, radius_km=radius_km, db=db)
 
 @router.post("", response_model=ApiResponse, status_code=status.HTTP_201_CREATED)
 def create_medicine(

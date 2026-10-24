@@ -10,7 +10,7 @@ class NotificationOut(BaseModel):
     type: str
     reference_id: Optional[int] = None
     is_read: bool
-    created_at: datetime
+    created_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

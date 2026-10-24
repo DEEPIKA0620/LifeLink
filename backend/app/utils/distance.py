@@ -5,8 +5,8 @@ def calculate_haversine_distance(lat1: float, lon1: float, lat2: float, lon2: fl
     Calculates the great-circle distance between two points on the Earth's surface
     using the Haversine formula in kilometers (km).
     """
-    if lat1 == 0.0 or lon1 == 0.0 or lat2 == 0.0 or lon2 == 0.0:
-        return 5.0 # Default reasonable distance if coordinates missing
+    if lat1 is None or lon1 is None or lat2 is None or lon2 is None:
+        return 9999.0
 
     # Radius of Earth in kilometers
     R = 6371.0
@@ -26,10 +26,22 @@ def calculate_haversine_distance(lat1: float, lon1: float, lat2: float, lon2: fl
     distance = R * c
     return round(distance, 2)
 
-def estimate_travel_time_minutes(distance_km: float) -> int:
+def estimate_travel_time_minutes(distance_km: float, assumed_speed_kmh: float = 30.0) -> int:
     """
-    Estimates travel time in minutes based on distance.
-    Prototype estimation rule: estimated_minutes = distance_km * 3
+    Estimates travel time in minutes based on straight-line distance and an assumed average speed of 30 km/h.
+    - 5 km ≈ 10 mins
+    - 10 km ≈ 20 mins
+    - 25 km ≈ 50 mins
     """
-    minutes = int(math.ceil(distance_km * 3))
-    return max(3, minutes) # Minimum 3 minutes
+    if distance_km <= 0:
+        return 2
+    minutes = int(math.ceil((distance_km / assumed_speed_kmh) * 60.0))
+    return max(2, minutes)
+
+def format_travel_time_label(minutes: int) -> str:
+    """Transparently labels the travel time estimate without faking live traffic accuracy"""
+    if minutes < 60:
+        return f"~{minutes} mins (approx. 30 km/h estimate)"
+    hours = minutes // 60
+    rem_mins = minutes % 60
+    return f"~{hours}h {rem_mins}m (approx. 30 km/h estimate)"

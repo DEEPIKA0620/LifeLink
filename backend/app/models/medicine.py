@@ -10,7 +10,9 @@ class Medicine(Base):
     pharmacy_id = Column(Integer, ForeignKey("pharmacies.id", ondelete="CASCADE"), nullable=False)
     medicine_name = Column(String(150), nullable=False, index=True)
     generic_name = Column(String(150), nullable=False, index=True)
-    category = Column(String(100), default="General")
+    category = Column(String(100), default="General", index=True)
+    dosage_form = Column(String(50), nullable=True) # Tablet, Capsule, Syrup, Inhaler, Drops, Ointment
+    strength = Column(String(50), nullable=True) # 650mg, 500mg, 10mg, etc.
     quantity = Column(Integer, nullable=False, default=0)
     unit = Column(String(50), default="strips")
     price = Column(Numeric(10, 2), nullable=False, default=0.00)

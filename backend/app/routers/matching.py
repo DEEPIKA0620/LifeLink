@@ -171,3 +171,149 @@ def reject_donor_match(
     db.commit()
 
     return ApiResponse(success=True, message="Request match rejected")
+
+@router.post("/api/blood-requests/{request_id}/accept", response_model=ApiResponse)
+def accept_blood_request_by_id(
+    request_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Donor accepts an emergency blood request by request ID.
+    Marks match as accepted, updates request status, creates notifications,
+    and logs a completed donation history record.
+    """
+    req = db.query(BloodRequest).filter(BloodRequest.id == request_id).first()
+    if not req:
+        raise HTTPException(status_code=404, detail="Blood request not found")
+
+    donor = db.query(Donor).filter(Donor.user_id == current_user.id).first()
+    if not donor and current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Only registered donors can accept blood requests")
+
+    # Find or create match record
+    match = None
+    if donor:
+        match = db.query(DonorMatch).filter(
+            DonorMatch.request_id == request_id,
+            DonorMatch.donor_id == donor.id
+        ).first()
+
+    if not match and donor:
+        from app.utils.distance import calculate_haversine_distance, estimate_travel_time_minutes
+        dist = calculate_haversine_distance(req.latitude, req.longitude, donor.latitude, donor.longitude)
+        est_mins = estimate_travel_time_minutes(dist)
+        match = DonorMatch(
+            request_id=req.id,
+            donor_id=donor.id,
+            match_score=95,
+            distance_km=dist,
+            estimated_minutes=est_mins,
+            blood_compatibility=100,
+            availability_score=100,
+            distance_score=90,
+            response_score=90,
+            eligibility_score=100,
+            match_reasons="Direct donor acceptance",
+            status="accepted"
+        )
+        db.add(match)
+    elif match:
+        match.status = "accepted"
+
+    req.status = "donor_accepted"
+
+    # Status Timeline
+    status_entry = RequestStatusHistory(
+        request_id=req.id,
+        status="donor_accepted",
+        changed_by=current_user.id,
+        notes=f"Donor {current_user.full_name} accepted the blood request"
+    )
+    db.add(status_entry)
+
+    # Notify Requester
+    create_user_notification(
+        db=db,
+        user_id=req.requester_id,
+        title="DONOR ACCEPTED YOUR REQUEST",
+        message=f"Donor {current_user.full_name} ({donor.blood_group if donor else 'Matched'}) accepted your blood request for {req.hospital_name}. Contact phone is now available.",
+        notification_type="donor_accepted",
+        reference_id=req.id
+    )
+
+    # Record donation entry
+    if donor:
+        donation = DonationHistory(
+            donor_id=donor.id,
+            hospital_id=req.hospital_id,
+            request_id=req.id,
+            donation_date=datetime.now().date(),
+            blood_group=donor.blood_group,
+            units=req.units_required or 1,
+            donation_type="Whole Blood",
+            status="completed",
+            notes=f"Emergency donation accepted for request #{req.id}"
+        )
+        db.add(donation)
+        donor.total_donations += 1
+
+    db.commit()
+
+    return ApiResponse(
+        success=True,
+        message="Emergency blood request accepted successfully! Requester can now view your contact details.",
+        data={"match_status": "accepted", "contact_phone": current_user.phone}
+    )
+
+@router.post("/api/blood-requests/{request_id}/reject", response_model=ApiResponse)
+def reject_blood_request_by_id(
+    request_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Donor rejects an emergency blood request by request ID.
+    Marks match as rejected.
+    """
+    req = db.query(BloodRequest).filter(BloodRequest.id == request_id).first()
+    if not req:
+        raise HTTPException(status_code=404, detail="Blood request not found")
+
+    donor = db.query(Donor).filter(Donor.user_id == current_user.id).first()
+    if not donor and current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Only registered donors can decline blood requests")
+
+    match = None
+    if donor:
+        match = db.query(DonorMatch).filter(
+            DonorMatch.request_id == request_id,
+            DonorMatch.donor_id == donor.id
+        ).first()
+
+    if not match and donor:
+        match = DonorMatch(
+            request_id=req.id,
+            donor_id=donor.id,
+            match_score=50,
+            distance_km=10.0,
+            estimated_minutes=20,
+            blood_compatibility=100,
+            availability_score=50,
+            distance_score=50,
+            response_score=50,
+            eligibility_score=100,
+            match_reasons="Donor declined",
+            status="rejected"
+        )
+        db.add(match)
+    elif match:
+        match.status = "rejected"
+
+    db.commit()
+
+    return ApiResponse(
+        success=True,
+        message="Emergency blood request declined.",
+        data={"match_status": "rejected"}
+    )

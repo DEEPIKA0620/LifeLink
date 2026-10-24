@@ -17,9 +17,11 @@ function renderMatchCard(match) {
             <span class="badge ${match.availability_status === 'available' ? 'badge-available' : 'badge-unavailable'}">${match.availability_status || 'available'}</span>
           </div>
           
-          <div class="flex items-center gap-6 mt-3 text-sm text-slate-600">
+          <div class="flex flex-wrap items-center gap-x-6 gap-y-2 mt-3 text-sm text-slate-600">
             <span>📍 <b>Distance:</b> ${match.distance_km} km</span>
-            <span>⏱️ <b>Est. Travel Time:</b> ~${match.estimated_minutes} minutes</span>
+            <span>⏱️ <b>Approx. Travel Time:</b> ${match.travel_time_label || ('~' + match.estimated_minutes + ' mins (approx. 30 km/h estimate)')}</span>
+            <span>🏢 <b>Area:</b> ${match.locality ? (match.locality + ', ' + (match.city || '')) : (match.city || 'Nearby')}</span>
+            ${match.total_donations !== undefined ? `<span>🩸 <b>Donations:</b> ${match.total_donations}</span>` : ''}
             ${match.contact_revealed && match.donor_phone ? `<span class="text-green-700 font-bold">📞 Phone: ${match.donor_phone}</span>` : ''}
           </div>
         </div>

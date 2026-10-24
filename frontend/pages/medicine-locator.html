@@ -4,903 +4,645 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Medicine Locator — LifeLink</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- IMPORTANT:
-         Since your frontend is running from /frontend/,
-         use relative paths instead of /css/... -->
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/responsive.css">
-
-    <link rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 
-<body class="bg-slate-50 text-slate-900">
+<body class="bg-slate-50 text-slate-900 font-sans">
 
     <!-- NAVBAR -->
-    <nav id="main-nav"
-        class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
-    </nav>
-
+    <nav id="main-nav" class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm"></nav>
 
     <!-- MAIN -->
     <main class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
 
         <!-- PAGE HEADER -->
         <div class="mb-8">
-
-            <h1 class="text-3xl font-extrabold text-slate-900">
-                Emergency Medicine Locator
-            </h1>
-
-            <p class="text-sm text-slate-600 mt-2">
-                Find medicines available at nearby verified pharmacies.
-            </p>
-
-        </div>
-
-
-        <!-- SEARCH CARD -->
-        <div class="glass-card p-6 mb-8">
-
-            <form id="medicine-search-form"
-                class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-
-                <!-- MEDICINE -->
-                <div class="md:col-span-2">
-
-                    <label
-                        class="block text-xs font-bold text-slate-600 uppercase mb-2">
-                        Medicine or Generic Name
-                    </label>
-
-                    <input
-                        type="text"
-                        id="med-search-q"
-                        value="Paracetamol"
-                        placeholder="Example: Paracetamol"
-                        class="w-full p-3 border border-slate-300 rounded-lg font-medium"
-                        required>
-
-                </div>
-
-
-                <!-- AVAILABILITY -->
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-
-                    <label
-                        class="block text-xs font-bold text-slate-600 uppercase mb-2">
-                        Availability
-                    </label>
-
-                    <select
-                        id="med-filter-avail"
-                        class="w-full p-3 border border-slate-300 rounded-lg">
-
-                        <option value="">
-                            All
-                        </option>
-
-                        <option value="in_stock" selected>
-                            In Stock
-                        </option>
-
-                        <option value="low_stock">
-                            Low Stock
-                        </option>
-
-                    </select>
-
+                    <h1 class="text-3xl font-extrabold text-slate-900 flex items-center gap-2">
+                        <span>💊</span> Emergency Medicine Locator
+                    </h1>
+                    <p class="text-sm text-slate-600 mt-2">
+                        Find real-time prescription & essential medicines stocked at verified nearby pharmacies across India.
+                    </p>
                 </div>
-
-
-                <!-- SEARCH BUTTON -->
-                <button
-                    type="submit"
-                    class="btn-blue py-3 px-5 font-bold rounded-lg">
-
-                    🔍 Locate Medicine
-
-                </button>
-
-            </form>
-
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        45+ Verified Pharmacies Active
+                    </span>
+                </div>
+            </div>
         </div>
 
+        <!-- SEARCH FILTERS CARD -->
+        <div class="glass-card p-6 mb-8 border border-slate-200 shadow-sm">
+            <form id="medicine-search-form" class="space-y-4">
+                <!-- ROW 1: Query & Categories -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                    <div class="md:col-span-6">
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-2">
+                            Medicine, Generic Name or Strength
+                        </label>
+                        <div class="relative">
+                            <input
+                                type="text"
+                                id="med-search-q"
+                                value="Paracetamol"
+                                placeholder="e.g. Paracetamol, Amoxicillin, Metformin, 650 mg..."
+                                class="w-full p-3 pl-10 border border-slate-300 rounded-lg font-medium text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                required>
+                            <span class="absolute left-3 top-3.5 text-slate-400">🔍</span>
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-3">
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-2">
+                            Category
+                        </label>
+                        <select id="med-filter-category" class="w-full p-3 border border-slate-300 rounded-lg font-medium text-slate-800 bg-white">
+                            <option value="all">All Categories</option>
+                            <option value="Pain Relief & Fever">Pain Relief & Fever</option>
+                            <option value="Antibiotics">Antibiotics</option>
+                            <option value="Diabetes Care">Diabetes Care</option>
+                            <option value="Blood Pressure & Heart">Blood Pressure & Heart</option>
+                            <option value="Gastric & Digestive">Gastric & Digestive</option>
+                            <option value="Cough & Cold">Cough & Cold</option>
+                            <option value="Allergy">Allergy</option>
+                            <option value="Vitamins & Supplements">Vitamins & Supplements</option>
+                            <option value="First Aid">First Aid</option>
+                            <option value="Skin Care">Skin Care</option>
+                            <option value="Respiratory Care">Respiratory Care</option>
+                            <option value="Paediatric">Paediatric</option>
+                        </select>
+                    </div>
+
+                    <div class="md:col-span-3">
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-2">
+                            Dosage Form
+                        </label>
+                        <select id="med-filter-dosage" class="w-full p-3 border border-slate-300 rounded-lg font-medium text-slate-800 bg-white">
+                            <option value="all">All Forms</option>
+                            <option value="Tablet">Tablet</option>
+                            <option value="Capsule">Capsule</option>
+                            <option value="Syrup">Syrup</option>
+                            <option value="Injection">Injection</option>
+                            <option value="Inhaler">Inhaler</option>
+                            <option value="Cream">Cream / Ointment</option>
+                            <option value="Drops">Eye/Ear Drops</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- ROW 2: Multi-City Location & Radius Controls -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 pt-2 border-t border-slate-100 items-end">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-2">
+                            City / Region
+                        </label>
+                        <select id="med-filter-city" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm font-semibold bg-white">
+                            <option value="all">All Cities</option>
+                            <!-- Dynamically loaded from /api/locations -->
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-2">
+                            Locality / Branch Area
+                        </label>
+                        <select id="med-filter-locality" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm font-semibold bg-white">
+                            <option value="all">All Localities</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-2">
+                            Search Radius
+                        </label>
+                        <select id="med-filter-radius" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm font-semibold bg-white">
+                            <option value="all">Any Distance</option>
+                            <option value="5">Within 5 km</option>
+                            <option value="10">Within 10 km</option>
+                            <option value="15">Within 15 km</option>
+                            <option value="25">Within 25 km</option>
+                            <option value="50" selected>Within 50 km</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-2">
+                            Availability
+                        </label>
+                        <select id="med-filter-avail" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm font-semibold bg-white">
+                            <option value="all">All Stock Statuses</option>
+                            <option value="in_stock" selected>In Stock Only</option>
+                            <option value="low_stock">Low Stock (Expiring/Few)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-2">
+                            Sort Results
+                        </label>
+                        <select id="med-filter-sort" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm font-semibold bg-white">
+                            <option value="nearest" selected>Nearest Distance</option>
+                            <option value="price_asc">Price: Low to High</option>
+                            <option value="price_desc">Price: High to Low</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- ROW 3: Origin bar & Search Button -->
+                <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100">
+                    <div class="flex items-center gap-3">
+                        <button type="button" id="btn-med-gps" class="btn-outline text-xs py-2 px-3 flex items-center gap-1.5 text-slate-700 bg-white">
+                            <span>📍</span> Use My GPS
+                        </button>
+                        <span id="med-origin-badge" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md font-mono text-[11px] border border-slate-200">
+                            Search Origin: Bengaluru Central (12.9716, 77.5946)
+                        </span>
+                    </div>
+
+                    <button type="submit" class="btn-blue py-2.5 px-6 font-bold rounded-lg text-sm flex items-center gap-2">
+                        <span>🔍</span> Search Pharmacy Inventory
+                    </button>
+                </div>
+            </form>
+        </div>
 
         <!-- SEARCH STATUS -->
-        <div id="search-status"
-            class="mb-5 text-sm text-slate-500">
+        <div id="search-status" class="mb-5 text-sm font-semibold text-slate-600 flex items-center justify-between">
+            <span>Enter query to locate verified pharmacy inventory.</span>
+            <span class="text-xs text-slate-400 font-normal">Approximate travel times calculated at 30 km/h average speed</span>
         </div>
 
+        <!-- TWO-COLUMN LAYOUT: MAP & RESULTS -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- MAP COLUMN -->
+            <div class="lg:col-span-1">
+                <div class="glass-card p-4 sticky top-24 border border-slate-200 shadow-sm">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-bold text-sm text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                            <span>🗺️</span> Pharmacy Location Map
+                        </h3>
+                        <span id="map-pharmacies-count" class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                            0 Pharmacies
+                        </span>
+                    </div>
+                    <div id="map" class="h-96 rounded-xl border border-slate-200"></div>
+                    <div class="mt-3 p-2 bg-slate-50 rounded-lg border border-slate-100 text-[11px] text-slate-500 space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-emerald-600 inline-block"></span>
+                            <span>Green pins show stocking pharmacy locations.</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-sky-600 inline-block"></span>
+                            <span>Blue pin indicates your active search origin.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <!-- RESULTS -->
-        <div id="medicine-results-container"
-            class="space-y-5">
-
-            <!-- Results appear here -->
-
+            <!-- RESULTS COLUMN -->
+            <div class="lg:col-span-2 space-y-5" id="medicine-results-container">
+                <!-- Results rendered dynamically -->
+            </div>
         </div>
 
+        <!-- DISCLAIMER -->
+        <div class="mt-10 p-4 rounded-xl bg-slate-100 border border-slate-200 text-xs text-slate-500 text-center">
+            <strong>Synthetic Demo Inventory Notice:</strong> All medicine inventories, pharmacy branches, quantities, and pricing are generated for simulation and development purposes. Travel times are approximate distance-based estimates (~30 km/h baseline). Please call pharmacies directly before visiting during genuine medical emergencies.
+        </div>
     </main>
 
-
     <!-- JAVASCRIPT FILES -->
-
     <script src="../js/api.js"></script>
     <script src="../js/auth.js"></script>
     <script src="../js/navigation.js"></script>
+    <script src="../js/location.js"></script>
+    <script src="../js/map.js"></script>
     <script src="../js/notifications.js"></script>
     <script src="../js/utils.js"></script>
 
-
     <!-- MEDICINE SEARCH SCRIPT -->
     <script>
+        let locationCatalog = [];
+        let currentOrigin = { latitude: 12.9716, longitude: 77.5946, label: "Bengaluru Central" };
+        let leafletMap = null;
+        let leafletMarkers = null;
 
-        document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("DOMContentLoaded", async function () {
+            console.log("LifeLink Medicine Locator Initializing...");
 
-            console.log("LifeLink Medicine Locator Loaded");
+            initMedicineMap();
+            await loadLocationCatalog();
 
-            const form =
-                document.getElementById("medicine-search-form");
-
+            const form = document.getElementById("medicine-search-form");
             form.addEventListener("submit", function (event) {
-
                 event.preventDefault();
-
                 searchMedicine();
-
             });
 
-            // Automatically search Paracetamol when page opens
-            searchMedicine();
+            // City dropdown change handler
+            document.getElementById("med-filter-city").addEventListener("change", function(e) {
+                updateLocalityDropdown(e.target.value);
+                const selectedCity = locationCatalog.find(c => c.city.toLowerCase() === e.target.value.toLowerCase());
+                if (selectedCity) {
+                    const cLat = selectedCity.center ? selectedCity.center.lat : 12.9716;
+                    const cLon = selectedCity.center ? selectedCity.center.lon : 77.5946;
+                    currentOrigin = {
+                        latitude: cLat,
+                        longitude: cLon,
+                        label: `${selectedCity.city} Center`
+                    };
+                    updateOriginBadge();
+                    if (leafletMap) {
+                        leafletMap.setView([currentOrigin.latitude, currentOrigin.longitude], 12);
+                    }
+                }
+            });
 
+            // Locality dropdown change handler
+            document.getElementById("med-filter-locality").addEventListener("change", function(e) {
+                const cityName = document.getElementById("med-filter-city").value;
+                const locName = e.target.value;
+                const cityData = locationCatalog.find(c => c.city.toLowerCase() === cityName.toLowerCase());
+                if (cityData && locName !== "all") {
+                    const locData = (cityData.localities || []).find(l => l.name === locName);
+                    if (locData) {
+                        const lLat = locData.lat !== undefined ? locData.lat : locData.latitude;
+                        const lLon = locData.lon !== undefined ? locData.lon : locData.longitude;
+                        currentOrigin = {
+                            latitude: lLat,
+                            longitude: lLon,
+                            label: `${locData.name}, ${cityData.city}`
+                        };
+                        updateOriginBadge();
+                        if (leafletMap) {
+                            leafletMap.setView([currentOrigin.latitude, currentOrigin.longitude], 13);
+                        }
+                    }
+                }
+            });
+
+            // GPS button handler
+            document.getElementById("btn-med-gps").addEventListener("click", function() {
+                const badge = document.getElementById("med-origin-badge");
+                badge.textContent = "Acquiring GPS coordinates...";
+                getUserLocation(function(pos) {
+                    currentOrigin = {
+                        latitude: pos.latitude,
+                        longitude: pos.longitude,
+                        label: `Current GPS (${pos.latitude.toFixed(4)}, ${pos.longitude.toFixed(4)})`
+                    };
+                    updateOriginBadge();
+                    if (leafletMap) {
+                        leafletMap.setView([currentOrigin.latitude, currentOrigin.longitude], 13);
+                    }
+                    searchMedicine();
+                });
+            });
+
+            // Run initial default search
+            searchMedicine();
         });
 
+        function initMedicineMap() {
+            try {
+                leafletMap = initLeafletMap("map", currentOrigin.latitude, currentOrigin.longitude, 12);
+            } catch (err) {
+                console.warn("Leaflet map initialization warning:", err);
+            }
+        }
+
+        async function loadLocationCatalog() {
+            try {
+                const res = await api.get('/locations');
+                if (res && res.data && res.data.locations) {
+                    locationCatalog = res.data.locations;
+                    const citySelect = document.getElementById('med-filter-city');
+                    citySelect.innerHTML = `<option value="all">All Cities</option>` +
+                        locationCatalog.map(c => `<option value="${c.city}">${c.city} (${c.state})</option>`).join('');
+                }
+            } catch (err) {
+                console.warn("Could not load /locations API:", err);
+            }
+        }
+
+        function updateLocalityDropdown(cityName) {
+            const locSelect = document.getElementById("med-filter-locality");
+            if (!cityName || cityName === "all") {
+                locSelect.innerHTML = `<option value="all">All Localities</option>`;
+                return;
+            }
+            const found = locationCatalog.find(c => c.city.toLowerCase() === cityName.toLowerCase());
+            if (found && found.localities && found.localities.length > 0) {
+                locSelect.innerHTML = `<option value="all">All Localities in ${found.city}</option>` +
+                    found.localities.map(l => `<option value="${l.name}">${l.name}</option>`).join('');
+            } else {
+                locSelect.innerHTML = `<option value="all">All Localities</option>`;
+            }
+        }
+
+        function updateOriginBadge() {
+            const badge = document.getElementById("med-origin-badge");
+            badge.textContent = `Search Origin: ${currentOrigin.label} (${currentOrigin.latitude.toFixed(4)}, ${currentOrigin.longitude.toFixed(4)})`;
+        }
 
         async function searchMedicine() {
-
-            const container =
-                document.getElementById(
-                    "medicine-results-container"
-                );
-
-            const status =
-                document.getElementById(
-                    "search-status"
-                );
-
-
-            const input =
-                document.getElementById(
-                    "med-search-q"
-                );
-
-
-            const availability =
-                document.getElementById(
-                    "med-filter-avail"
-                ).value;
-
-
-            const query =
-                input.value.trim();
-
+            const container = document.getElementById("medicine-results-container");
+            const status = document.getElementById("search-status");
+            const query = document.getElementById("med-search-q").value.trim();
+            const category = document.getElementById("med-filter-category").value;
+            const dosage = document.getElementById("med-filter-dosage").value;
+            const city = document.getElementById("med-filter-city").value;
+            const radius = document.getElementById("med-filter-radius").value;
+            const availability = document.getElementById("med-filter-avail").value;
+            const sort = document.getElementById("med-filter-sort").value;
 
             if (!query) {
-
                 container.innerHTML = `
-                    <div class="bg-yellow-50 border border-yellow-200
-                                rounded-xl p-6 text-center">
-
-                        <div class="text-3xl mb-2">
-                            💊
-                        </div>
-
-                        <h3 class="font-bold text-yellow-800">
-                            Please enter a medicine name
-                        </h3>
-
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-6 text-center">
+                        <div class="text-3xl mb-2">💊</div>
+                        <h3 class="font-bold text-amber-800">Please enter a medicine or generic name</h3>
+                        <p class="text-xs text-amber-600 mt-1">Example: Paracetamol, Amoxicillin, Metformin, Insulin, 650 mg</p>
                     </div>
                 `;
-
                 return;
             }
 
-
-            // LOADING
-
+            // LOADING STATE
             container.innerHTML = `
-                <div class="glass-card p-10 text-center">
-
-                    <div class="text-4xl mb-3">
-                        💊
-                    </div>
-
-                    <p class="font-semibold text-slate-600">
-                        Searching pharmacy database...
-                    </p>
-
+                <div class="glass-card p-10 text-center border border-slate-200">
+                    <div class="text-4xl mb-3 animate-spin inline-block">⏳</div>
+                    <p class="font-bold text-slate-700">Searching pharmacy database across locations...</p>
+                    <p class="text-xs text-slate-500 mt-1">Computing distance and availability at verified branches</p>
                 </div>
             `;
 
-
-            status.textContent =
-                `Searching for "${query}"...`;
-
+            status.firstElementChild.textContent = `Searching for "${query}" near ${currentOrigin.label}...`;
 
             try {
+                const params = new URLSearchParams();
+                params.append("q", query);
+                if (category && category !== "all") params.append("category", category);
+                if (dosage && dosage !== "all") params.append("dosage_form", dosage);
+                if (city && city !== "all") params.append("city", city);
+                if (availability && availability !== "all") params.append("availability", availability);
+                if (sort) params.append("sort", sort);
 
-                /*
-                 * IMPORTANT
-                 *
-                 * This is the endpoint you already
-                 * tested successfully in Swagger:
-                 *
-                 * GET /api/medicines/search?q=Paracetamol
-                 */
+                // Origin coordinates for distance calculation
+                if (currentOrigin.latitude && currentOrigin.longitude) {
+                    params.append("lat", currentOrigin.latitude);
+                    params.append("lon", currentOrigin.longitude);
+                }
+                if (radius && radius !== "all") {
+                    params.append("radius_km", radius);
+                }
 
-                let endpoint =
-                    `/medicines/search?q=${encodeURIComponent(query)}`;
+                const endpoint = `/medicines/search?${params.toString()}`;
+                console.log("Calling Medicine API:", endpoint);
 
+                const response = await api.get(endpoint, false);
+                console.log("Medicine API Response:", response);
 
-                console.log(
-                    "Calling API:",
-                    endpoint
-                );
-
-
-                const response =
-                    await api.get(
-                        endpoint,
-                        false
-                    );
-
-
-                console.log(
-                    "Medicine API Response:",
-                    response
-                );
-
-
-                if (
-                    !response ||
-                    !response.data ||
-                    !response.data.medicines
-                ) {
-
-                    showNoResults(query);
-
+                if (!response || !response.data || !response.data.medicines || response.data.medicines.length === 0) {
+                    showNoResults(query, city, radius);
+                    updatePharmacyMap([]);
                     return;
                 }
 
+                const medicines = response.data.medicines;
+                status.firstElementChild.textContent = `Found ${medicines.length} verified pharmacy result(s) for "${query}".`;
 
-                let medicines =
-                    response.data.medicines;
+                // Display Results
+                container.innerHTML = medicines.map(med => createMedicineCard(med)).join("");
 
+                // Update Map Pins
+                updatePharmacyMap(medicines);
 
-                /*
-                 * FRONTEND AVAILABILITY FILTER
-                 */
-
-                if (availability) {
-
-                    medicines =
-                        medicines.filter(
-                            medicine =>
-                                medicine.availability_status ===
-                                availability
-                        );
-
-                }
-
-
-                if (medicines.length === 0) {
-
-                    showNoResults(query);
-
-                    return;
-                }
-
-
-                status.textContent =
-                    `Found ${medicines.length} medicine result(s) for "${query}".`;
-
-
-                /*
-                 * DISPLAY RESULTS
-                 */
-
-                container.innerHTML =
-                    medicines.map(
-                        medicine =>
-                            createMedicineCard(
-                                medicine
-                            )
-                    ).join("");
-
-
-            }
-
-            catch (error) {
-
-                console.error(
-                    "Medicine Search Error:",
-                    error
-                );
-
-
-                status.textContent =
-                    "Unable to connect to medicine service.";
-
-
+            } catch (error) {
+                console.error("Medicine Search Error:", error);
+                status.firstElementChild.textContent = "Unable to connect to pharmacy database.";
                 container.innerHTML = `
-
-                    <div class="bg-red-50
-                                border border-red-200
-                                rounded-xl p-6">
-
+                    <div class="bg-red-50 border border-red-200 rounded-xl p-6">
                         <div class="flex gap-3">
-
-                            <div class="text-2xl">
-                                ❌
-                            </div>
-
+                            <div class="text-2xl">❌</div>
                             <div>
-
-                                <h3 class="font-bold text-red-800">
-                                    Medicine search failed
-                                </h3>
-
-                                <p class="text-sm text-red-600 mt-1">
-                                    ${escapeHtml(error.message)}
-                                </p>
-
+                                <h3 class="font-bold text-red-800">Medicine search failed</h3>
+                                <p class="text-sm text-red-600 mt-1">${escapeHtml(error.message)}</p>
                             </div>
-
                         </div>
-
                     </div>
-
                 `;
-
             }
-
         }
 
+        function createMedicineCard(med) {
+            const medName = med.medicine_name || "Medicine";
+            const genericName = med.generic_name || "N/A";
+            const strength = med.strength ? ` • ${med.strength}` : "";
+            const dosage = med.dosage_form || "Tablet";
+            const category = med.category || "General";
+            const pharmacyName = med.pharmacy_name || "Verified Pharmacy";
+            const address = med.address || "Branch Address";
+            const city = med.city || "City";
+            const phone = med.phone || "";
+            const quantity = med.quantity ?? 0;
+            const unit = med.unit || "units";
+            const price = med.price != null ? Number(med.price).toFixed(2) : "N/A";
+            const availability = med.availability_status || "in_stock";
+            const opening = med.opening_time || "08:00";
+            const closing = med.closing_time || "22:00";
+            const updated = med.last_updated ? formatDate(med.last_updated) : "Recently updated";
 
-
-        /*
-         * CREATE MEDICINE RESULT CARD
-         */
-
-        function createMedicineCard(medicine) {
-
-            const medicineName =
-                medicine.medicine_name ||
-                "Medicine";
-
-
-            const pharmacyName =
-                medicine.pharmacy_name ||
-                "Pharmacy";
-
-
-            const quantity =
-                medicine.quantity ??
-                0;
-
-
-            const unit =
-                medicine.unit ||
-                "units";
-
-
-            const price =
-                medicine.price != null
-                    ? Number(medicine.price).toFixed(2)
-                    : "N/A";
-
-
-            const phone =
-                medicine.phone ||
-                "";
-
-
-            const address =
-                medicine.address ||
-                "Address unavailable";
-
-
-            const city =
-                medicine.city ||
-                "";
-
-
-            const genericName =
-                medicine.generic_name ||
-                "Not available";
-
-
-            const category =
-                medicine.category ||
-                "General";
-
-
-            const availability =
-                medicine.availability_status ||
-                "unknown";
-
-
-            let availabilityText =
-                availability.replace(
-                    "_",
-                    " "
-                );
-
-
-            let availabilityClass =
-                "bg-slate-100 text-slate-700";
-
-
-            if (availability === "in_stock") {
-
-                availabilityClass =
-                    "bg-green-100 text-green-700";
-
+            let availabilityBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">● In Stock</span>`;
+            if (availability === "low_stock") {
+                availabilityBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">▲ Low Stock</span>`;
+            } else if (availability === "out_of_stock") {
+                availabilityBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-200">✕ Out of Stock</span>`;
             }
 
-            else if (availability === "low_stock") {
-
-                availabilityClass =
-                    "bg-yellow-100 text-yellow-700";
-
+            // Distance & Travel Time Display
+            let distanceHtml = "";
+            if (med.distance_km != null) {
+                const distNum = Number(med.distance_km).toFixed(1);
+                const travelLabel = med.travel_time_label || `~${Math.ceil(med.distance_km * 2)} mins (approx. 30 km/h estimate)`;
+                distanceHtml = `
+                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-sky-50 border border-sky-200 rounded-lg text-xs font-bold text-sky-800">
+                        <span>📍 ${distNum} km away</span>
+                        <span class="text-sky-600 font-medium">|</span>
+                        <span class="text-sky-700">⏱️ ${escapeHtml(travelLabel)}</span>
+                    </div>
+                `;
             }
-
 
             return `
-
-                <div
-                    class="bg-white rounded-2xl
-                           border border-slate-200
-                           shadow-sm
-                           hover:shadow-lg
-                           transition-all
-                           p-6">
-
-                    <!-- TOP -->
-
-                    <div
-                        class="flex flex-col
-                               md:flex-row
-                               md:items-start
-                               md:justify-between
-                               gap-5">
-
-
-                        <!-- MEDICINE INFO -->
-
-                        <div class="flex-1">
-
-                            <div
-                                class="flex flex-wrap
-                                       items-center gap-3">
-
-                                <div
-                                    class="w-12 h-12
-                                           rounded-xl
-                                           bg-emerald-100
-                                           flex items-center
-                                           justify-center
-                                           text-2xl">
-
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all p-6">
+                    <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-5">
+                        <!-- LEFT: MEDICINE & PHARMACY INFO -->
+                        <div class="flex-1 space-y-4">
+                            <!-- Header with icon -->
+                            <div class="flex items-start gap-3.5">
+                                <div class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center text-2xl flex-shrink-0">
                                     💊
-
                                 </div>
-
-
                                 <div>
-
-                                    <h2
-                                        class="text-xl
-                                               font-extrabold
-                                               text-slate-900">
-
-                                        ${escapeHtml(
-                                            pharmacyName
-                                        )}
-
-                                    </h2>
-
-                                    <p
-                                        class="text-sm
-                                               text-slate-500">
-
-                                        ${escapeHtml(
-                                            medicineName
-                                        )}
-
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <h2 class="text-xl font-extrabold text-slate-900">
+                                            ${escapeHtml(medName)}
+                                        </h2>
+                                        <span class="px-2 py-0.5 bg-slate-100 border border-slate-200 rounded text-xs font-bold text-slate-700">
+                                            ${escapeHtml(dosage)}${escapeHtml(strength)}
+                                        </span>
+                                        ${availabilityBadge}
+                                    </div>
+                                    <p class="text-xs text-slate-500 font-semibold mt-0.5">
+                                        Generic: <span class="text-slate-700 font-bold">${escapeHtml(genericName)}</span>
+                                        <span class="mx-1.5 text-slate-300">•</span>
+                                        Category: <span class="text-slate-700 font-medium">${escapeHtml(category)}</span>
                                     </p>
-
                                 </div>
-
                             </div>
 
-
-                            <!-- MEDICINE DETAILS -->
-
-                            <div
-                                class="mt-5
-                                       grid
-                                       grid-cols-1
-                                       sm:grid-cols-2
-                                       gap-3">
-
-
-                                <div
-                                    class="bg-slate-50
-                                           rounded-lg
-                                           p-3">
-
-                                    <p
-                                        class="text-xs
-                                               text-slate-500
-                                               uppercase
-                                               font-bold">
-
-                                        Medicine
-
-                                    </p>
-
-                                    <p
-                                        class="font-bold
-                                               text-slate-900">
-
-                                        ${escapeHtml(
-                                            medicineName
-                                        )}
-
-                                    </p>
-
+                            <!-- Pharmacy Branch Details -->
+                            <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-100 space-y-2">
+                                <div class="flex items-center justify-between flex-wrap gap-2">
+                                    <div class="font-extrabold text-slate-900 text-sm flex items-center gap-1.5">
+                                        <span>🏥</span> ${escapeHtml(pharmacyName)}
+                                    </div>
+                                    <span class="text-[11px] font-semibold text-slate-600 bg-white px-2 py-0.5 rounded border border-slate-200">
+                                        🕒 Hours: ${escapeHtml(opening)} – ${escapeHtml(closing)}
+                                    </span>
                                 </div>
 
-
-                                <div
-                                    class="bg-slate-50
-                                           rounded-lg
-                                           p-3">
-
-                                    <p
-                                        class="text-xs
-                                               text-slate-500
-                                               uppercase
-                                               font-bold">
-
-                                        Generic Name
-
-                                    </p>
-
-                                    <p
-                                        class="font-semibold
-                                               text-slate-800">
-
-                                        ${escapeHtml(
-                                            genericName
-                                        )}
-
-                                    </p>
-
-                                </div>
-
-
-                                <div
-                                    class="bg-slate-50
-                                           rounded-lg
-                                           p-3">
-
-                                    <p
-                                        class="text-xs
-                                               text-slate-500
-                                               uppercase
-                                               font-bold">
-
-                                        Category
-
-                                    </p>
-
-                                    <p
-                                        class="font-semibold
-                                               text-slate-800">
-
-                                        ${escapeHtml(
-                                            category
-                                        )}
-
-                                    </p>
-
-                                </div>
-
-
-                                <div
-                                    class="bg-slate-50
-                                           rounded-lg
-                                           p-3">
-
-                                    <p
-                                        class="text-xs
-                                               text-slate-500
-                                               uppercase
-                                               font-bold">
-
-                                        Available Quantity
-
-                                    </p>
-
-                                    <p
-                                        class="font-bold
-                                               text-emerald-700">
-
-                                        ${quantity}
-                                        ${escapeHtml(unit)}
-
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-
-                            <!-- PHARMACY -->
-
-                            <div
-                                class="mt-5
-                                       border-t
-                                       border-slate-100
-                                       pt-4">
-
-                                <p
-                                    class="font-bold
-                                           text-slate-800">
-
-                                    🏥 ${escapeHtml(
-                                        pharmacyName
-                                    )}
-
+                                <p class="text-xs text-slate-600 flex items-center gap-1">
+                                    <span>📍</span> ${escapeHtml(address)}, <strong class="text-slate-800">${escapeHtml(city)}</strong>
                                 </p>
 
-
-                                <p
-                                    class="text-sm
-                                           text-slate-500
-                                           mt-1">
-
-                                    📍 ${escapeHtml(
-                                        address
-                                    )},
-                                    ${escapeHtml(
-                                        city
-                                    )}
-
-                                </p>
-
-
-                                ${
-                                    phone
-                                    ? `
-                                    <p
-                                        class="text-sm
-                                               text-slate-600
-                                               mt-2">
-
-                                        📞 ${escapeHtml(
-                                            phone
-                                        )}
-
-                                    </p>
-                                    `
-                                    : ""
-                                }
-
+                                ${distanceHtml ? `<div class="pt-1">${distanceHtml}</div>` : ""}
                             </div>
 
+                            <!-- Footer Meta -->
+                            <div class="flex flex-wrap items-center justify-between text-[11px] text-slate-400 gap-2">
+                                <span>🔄 Stock updated: ${escapeHtml(updated)}</span>
+                                <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[10px] font-mono">Verified Partner Pharmacy</span>
+                            </div>
                         </div>
 
-
-                        <!-- RIGHT SIDE -->
-
-                        <div
-                            class="md:w-44
-                                   text-left
-                                   md:text-right">
-
-
-                            <!-- AVAILABILITY -->
-
-                            <span
-                                class="inline-block
-                                       px-3 py-1
-                                       rounded-full
-                                       text-xs
-                                       font-bold
-                                       ${availabilityClass}">
-
-                                ${escapeHtml(
-                                    availabilityText
-                                )}
-
-                            </span>
-
-
-                            <!-- PRICE -->
-
-                            <div
-                                class="mt-4">
-
-                                <p
-                                    class="text-xs
-                                           text-slate-500
-                                           font-semibold">
-
-                                    PRICE
-
-                                </p>
-
-                                <p
-                                    class="text-3xl
-                                           font-extrabold
-                                           text-slate-900">
-
+                        <!-- RIGHT: PRICING & STOCK CONTROLS -->
+                        <div class="md:w-48 flex-shrink-0 flex flex-col justify-between items-start md:items-end border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-5">
+                            <div>
+                                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Unit Price</p>
+                                <p class="text-3xl font-extrabold text-slate-900 mt-0.5">
                                     ₹${price}
-
                                 </p>
-
+                                <p class="text-xs font-semibold text-emerald-700 mt-1">
+                                    📦 ${quantity} ${escapeHtml(unit)} available
+                                </p>
                             </div>
 
-
-                            <!-- QUANTITY -->
-
-                            <p
-                                class="text-sm
-                                       font-semibold
-                                       text-slate-500
-                                       mt-2">
-
-                                ${quantity}
-                                ${escapeHtml(unit)}
-
-                            </p>
-
-
-                            <!-- CALL BUTTON -->
-
-                            ${
-                                phone
-                                ? `
-                                <a
-                                    href="tel:${phone}"
-                                    class="inline-block
-                                           mt-4
-                                           btn-blue
-                                           px-4 py-2
-                                           text-sm
-                                           font-bold">
-
-                                    📞 Call Pharmacy
-
-                                </a>
-                                `
-                                : ""
-                            }
-
+                            <div class="w-full mt-4 space-y-2">
+                                ${phone ? `
+                                    <a href="tel:${phone}" class="w-full btn-blue py-2 px-3 text-xs font-bold flex items-center justify-center gap-1.5 rounded-lg shadow-sm">
+                                        <span>📞</span> Call Pharmacy
+                                    </a>
+                                ` : ""}
+                                <button type="button" onclick="focusPharmacyOnMap(${med.latitude}, ${med.longitude}, '${escapeHtml(pharmacyName)}')" class="w-full btn-outline py-1.5 px-3 text-xs font-semibold text-slate-700 flex items-center justify-center gap-1 rounded-lg">
+                                    <span>🗺️</span> View on Map
+                                </button>
+                            </div>
                         </div>
-
                     </div>
-
                 </div>
-
             `;
-
         }
 
+        function updatePharmacyMap(medicines) {
+            const countBadge = document.getElementById("map-pharmacies-count");
+            countBadge.textContent = `${medicines.length} Pharmacies`;
 
+            if (!leafletMap) return;
 
-        /*
-         * NO RESULTS
-         */
+            const pins = medicines.map(m => ({
+                name: m.pharmacy_name,
+                lat: m.latitude,
+                lon: m.longitude,
+                type: 'pharmacy',
+                subtitle: `${m.medicine_name} — ₹${m.price} (${m.quantity} ${m.unit})`,
+                address: `${m.address}, ${m.city}`
+            }));
 
-        function showNoResults(query) {
+            renderMapPins(pins);
 
-            const container =
-                document.getElementById(
-                    "medicine-results-container"
-                );
+            // Re-center if valid pins exist
+            if (medicines.length > 0 && medicines[0].latitude && medicines[0].longitude) {
+                leafletMap.panTo([medicines[0].latitude, medicines[0].longitude]);
+            }
+        }
 
+        function focusPharmacyOnMap(lat, lon, name) {
+            if (!leafletMap || !lat || !lon) return;
+            leafletMap.setView([lat, lon], 15);
+            L.popup()
+                .setLatLng([lat, lon])
+                .setContent(`<div class="font-bold text-sm text-slate-900">${name}</div><div class="text-xs text-slate-600 mt-1">Selected Pharmacy Location</div>`)
+                .openOn(leafletMap);
+            document.getElementById("map").scrollIntoView({ behavior: "smooth", block: "center" });
+        }
 
-            const status =
-                document.getElementById(
-                    "search-status"
-                );
+        function showNoResults(query, city, radius) {
+            const container = document.getElementById("medicine-results-container");
+            const status = document.getElementById("search-status");
 
+            status.firstElementChild.textContent = `No inventory matching "${query}".`;
 
-            status.textContent =
-                `No results found for "${query}".`;
-
+            const cityText = city && city !== "all" ? ` in ${city}` : "";
+            const radiusText = radius && radius !== "all" ? ` within ${radius} km` : "";
 
             container.innerHTML = `
-
-                <div
-                    class="bg-white
-                           border border-slate-200
-                           rounded-2xl
-                           p-12
-                           text-center
-                           shadow-sm">
-
-                    <div class="text-5xl mb-4">
-                        💊
+                <div class="bg-white border border-slate-200 rounded-2xl p-12 text-center shadow-sm">
+                    <div class="text-5xl mb-4">💊</div>
+                    <h2 class="text-xl font-bold text-slate-800">No Matching Medicine Found</h2>
+                    <p class="text-sm text-slate-600 mt-2 max-w-md mx-auto">
+                        We could not find <strong>"${escapeHtml(query)}"</strong> stocked${cityText}${radiusText}.
+                    </p>
+                    <div class="mt-6 flex flex-wrap justify-center gap-3">
+                        <button type="button" onclick="resetSearchFilters()" class="btn-blue text-xs py-2 px-4 font-bold rounded-lg">
+                            Reset Search Radius & Filters
+                        </button>
                     </div>
-
-                    <h2
-                        class="text-xl
-                               font-bold
-                               text-slate-800">
-
-                        No Medicine Found
-
-                    </h2>
-
-                    <p
-                        class="text-sm
-                               text-slate-500
-                               mt-2">
-
-                        We couldn't find
-                        "${escapeHtml(query)}"
-                        in the available pharmacy database.
-
-                    </p>
-
-                    <p
-                        class="text-sm
-                               text-slate-500
-                               mt-1">
-
-                        Try another medicine name
-                        or generic name.
-
-                    </p>
-
+                    <div class="mt-6 text-xs text-slate-400">
+                        Try searching for generic equivalents such as <em>Paracetamol, Amoxicillin, Metformin, Cetirizine, or Azithromycin</em>.
+                    </div>
                 </div>
-
             `;
-
         }
 
-
-
-        /*
-         * BASIC HTML ESCAPE
-         */
+        function resetSearchFilters() {
+            document.getElementById("med-filter-category").value = "all";
+            document.getElementById("med-filter-dosage").value = "all";
+            document.getElementById("med-filter-city").value = "all";
+            document.getElementById("med-filter-radius").value = "all";
+            document.getElementById("med-filter-avail").value = "all";
+            searchMedicine();
+        }
 
         function escapeHtml(value) {
-
-            return String(value)
+            return String(value || "")
                 .replace(/&/g, "&amp;")
                 .replace(/</g, "&lt;")
                 .replace(/>/g, "&gt;")
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
-
         }
-
     </script>
-
 </body>
 
 </html>

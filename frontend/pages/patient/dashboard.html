@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Patient Dashboard — LifeLink</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="/css/style.css">
-  <link rel="stylesheet" href="/css/dashboard.css">
-  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="../../css/dashboard.css">
+  <link rel="stylesheet" href="../../css/responsive.css">
 </head>
 <body class="bg-slate-50 font-sans text-slate-900">
 
@@ -17,12 +17,12 @@
     <!-- Sidebar -->
     <aside class="sidebar">
       <div class="px-3 py-2 text-xs font-bold text-slate-400 uppercase">Patient Navigation</div>
-      <a href="/pages/patient/dashboard.html" class="sidebar-link active">📊 Dashboard</a>
-      <a href="/pages/emergency-request.html" class="sidebar-link">🚨 New Request</a>
-      <a href="/pages/find-blood.html" class="sidebar-link">🔍 Find Blood</a>
-      <a href="/pages/medicine-locator.html" class="sidebar-link">💊 Find Medicine</a>
-      <a href="/pages/request-history.html" class="sidebar-link">📜 Request History</a>
-      <a href="/pages/notifications.html" class="sidebar-link">🔔 Notifications</a>
+      <a href="dashboard.html" class="sidebar-link active">📊 Dashboard</a>
+      <a href="../emergency-request.html" class="sidebar-link">🚨 New Request</a>
+      <a href="../find-blood.html" class="sidebar-link">🔍 Find Blood</a>
+      <a href="../medicine-locator.html" class="sidebar-link">💊 Find Medicine</a>
+      <a href="../request-history.html" class="sidebar-link">📜 Request History</a>
+      <a href="../notifications.html" class="sidebar-link">🔔 Notifications</a>
     </aside>
 
     <!-- Main Content -->
@@ -32,7 +32,7 @@
           <h1 class="text-2xl font-extrabold text-slate-900">Patient Emergency Dashboard</h1>
           <p class="text-sm text-slate-600 mt-1">Manage emergency requests and track matched donors.</p>
         </div>
-        <a href="/pages/emergency-request.html" class="btn-emergency text-sm">
+        <a href="../emergency-request.html" class="btn-emergency text-sm">
           <span>🚨</span> Emergency Request
         </a>
       </div>
@@ -72,11 +72,11 @@
     </main>
   </div>
 
-  <script src="/js/api.js"></script>
-  <script src="/js/auth.js"></script>
-  <script src="/js/navigation.js"></script>
-  <script src="/js/notifications.js"></script>
-  <script src="/js/utils.js"></script>
+  <script src="../../js/api.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script src="../../js/navigation.js"></script>
+  <script src="../../js/notifications.js"></script>
+  <script src="../../js/utils.js"></script>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -109,7 +109,7 @@
             <div class="glass-card p-8 text-center">
               <h3 class="font-bold text-slate-700">No active emergency requests</h3>
               <p class="text-xs text-slate-500 mt-1 mb-4">Need urgent blood? Submit a request to trigger Smart Donor Matching.</p>
-              <a href="/pages/emergency-request.html" class="btn-emergency text-xs">Create Emergency Request</a>
+              <a href="../emergency-request.html" class="btn-emergency text-xs">Create Emergency Request</a>
             </div>
           `;
           return;
@@ -121,11 +121,11 @@
               <div class="flex items-center gap-3">
                 <span class="badge bg-red-100 text-red-700 font-extrabold text-sm">${r.blood_group}</span>
                 <h3 class="text-lg font-bold text-slate-900">${r.units_required} Unit(s) required</h3>
-                <span class="badge badge-${r.status}">${r.status.replace('_', ' ')}</span>
+                <span class="badge badge-${r.status || 'searching'}">${r.status ? r.status.replace('_', ' ') : 'N/A'}</span>
               </div>
               <p class="text-sm text-slate-600 mt-1">Hospital: <b>${r.hospital_name}</b> • Needed by: <b>${formatDate(r.required_by)}</b></p>
             </div>
-            <a href="/pages/request-details.html?id=${r.id}" class="btn-blue text-xs py-2 px-4">
+            <a href="../request-details.html?id=${r.id}" class="btn-blue text-xs py-2 px-4">
               Track Request & Matches →
             </a>
           </div>

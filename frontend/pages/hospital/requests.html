@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hospital Requests — LifeLink</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="/css/style.css">
-  <link rel="stylesheet" href="/css/dashboard.css">
-  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="../../css/dashboard.css">
+  <link rel="stylesheet" href="../../css/responsive.css">
 </head>
 <body class="bg-slate-50 font-sans text-slate-900">
 
@@ -16,10 +16,10 @@
   <div class="dashboard-container">
     <aside class="sidebar">
       <div class="px-3 py-2 text-xs font-bold text-slate-400 uppercase">Hospital Portal</div>
-      <a href="pages/hospital/dashboard.html" class="sidebar-link">🏥 Dashboard</a>
-      <a href="pages/hospital/blood-stock.html" class="sidebar-link">🩸 Blood Stock Manager</a>
-      <a href="pages/hospital/requests.html" class="sidebar-link active">🚨 Emergency Requests</a>
-      <a href="pages/notifications.html" class="sidebar-link">🔔 Notifications</a>
+      <a href="dashboard.html" class="sidebar-link">🏥 Dashboard</a>
+      <a href="blood-stock.html" class="sidebar-link">🩸 Blood Stock Manager</a>
+      <a href="requests.html" class="sidebar-link active">🚨 Emergency Requests</a>
+      <a href="../notifications.html" class="sidebar-link">🔔 Notifications</a>
     </aside>
 
     <main class="dashboard-main">
@@ -28,7 +28,7 @@
           <h1 class="text-2xl font-extrabold text-slate-900">Hospital Emergency Requests</h1>
           <p class="text-sm text-slate-600 mt-1">Track active blood requests assigned to hospital wards.</p>
         </div>
-        <a href="pages/emergency-request.html" class="btn-emergency text-sm">
+        <a href="../emergency-request.html" class="btn-emergency text-sm">
           <span>🚨</span> New Emergency Request
         </a>
       </div>
@@ -54,10 +54,10 @@
     </main>
   </div>
 
-  <script src="/js/api.js"></script>
-  <script src="/js/auth.js"></script>
-  <script src="/js/navigation.js"></script>
-  <script src="/js/utils.js"></script>
+  <script src="../../js/api.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script src="../../js/navigation.js"></script>
+  <script src="../../js/utils.js"></script>
 
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
@@ -78,9 +78,9 @@
             <td class="font-bold">${r.units_required} Unit(s)</td>
             <td><span class="badge ${r.priority === 'critical' ? 'badge-critical' : 'badge-urgent'}">${r.priority}</span></td>
             <td>${formatDate(r.required_by)}</td>
-            <td><span class="badge badge-${r.status}">${r.status.replace('_', ' ')}</span></td>
+            <td><span class="badge badge-${r.status || 'searching'}">${r.status ? r.status.replace('_', ' ') : 'N/A'}</span></td>
             <td>
-              <a href="pages/request-details.html?id=${r.id}" class="text-sky-600 font-bold hover:underline text-sm">
+              <a href="../request-details.html?id=${r.id}" class="text-sky-600 font-bold hover:underline text-sm">
                 View Matches →
               </a>
             </td>

@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Donor Dashboard — LifeLink</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="/css/style.css">
-  <link rel="stylesheet" href="/css/dashboard.css">
-  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="../../css/dashboard.css">
+  <link rel="stylesheet" href="../../css/responsive.css">
 </head>
 <body class="bg-slate-50 font-sans text-slate-900">
 
@@ -16,10 +16,10 @@
   <div class="dashboard-container">
     <aside class="sidebar">
       <div class="px-3 py-2 text-xs font-bold text-slate-400 uppercase">Donor Navigation</div>
-      <a href="/pages/donor/dashboard.html" class="sidebar-link active">🩸 Dashboard</a>
-      <a href="/pages/donor/profile.html" class="sidebar-link">👤 My Profile</a>
-      <a href="/pages/donor/donation-history.html" class="sidebar-link">📜 Donation History</a>
-      <a href="/pages/notifications.html" class="sidebar-link">🔔 Notifications</a>
+      <a href="dashboard.html" class="sidebar-link active">🩸 Dashboard</a>
+      <a href="profile.html" class="sidebar-link">👤 My Profile</a>
+      <a href="donation-history.html" class="sidebar-link">📜 Donation History</a>
+      <a href="../notifications.html" class="sidebar-link">🔔 Notifications</a>
     </aside>
 
     <main class="dashboard-main">
@@ -71,11 +71,11 @@
     </main>
   </div>
 
-  <script src="/js/api.js"></script>
-  <script src="/js/auth.js"></script>
-  <script src="/js/navigation.js"></script>
-  <script src="/js/notifications.js"></script>
-  <script src="/js/utils.js"></script>
+  <script src="../../js/api.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script src="../../js/navigation.js"></script>
+  <script src="../../js/notifications.js"></script>
+  <script src="../../js/utils.js"></script>
 
   <script>
     let currentStatus = 'available';
@@ -106,40 +106,71 @@
           btn.className = currentStatus === 'available' ? 'btn-blue text-xs py-2 px-4' : 'btn-outline text-xs py-2 px-4';
         }
 
-        // Load emergency matches
-        const reqsRes = await api.get('/blood-requests');
-        const container = document.getElementById('matches-container');
-
-        if (!reqsRes || !reqsRes.data || !reqsRes.data.requests) {
-          container.innerHTML = '<div class="glass-card p-6 text-center text-slate-500">No emergency requests active</div>';
-          return;
+        // Load emergency requests for this donor
+        let requests = [];
+        try {
+          const meRes = await api.get('/donors/me/requests');
+          if (meRes && meRes.data && meRes.data.requests) {
+            requests = meRes.data.requests;
+          }
+        } catch (err) {
+          const fallbackRes = await api.get('/blood-requests');
+          if (fallbackRes && fallbackRes.data && fallbackRes.data.requests) {
+            requests = fallbackRes.data.requests;
+          }
         }
 
-        const requests = reqsRes.data.requests.filter(r => r.status !== 'completed' && r.status !== 'cancelled');
+        const container = document.getElementById('matches-container');
 
-        if (requests.length === 0) {
+        if (!requests || requests.length === 0) {
           container.innerHTML = '<div class="glass-card p-8 text-center text-slate-500">No active emergency requests requiring your blood group right now.</div>';
           return;
         }
 
-        container.innerHTML = requests.map(r => `
-          <div class="glass-card p-6 border-l-4 border-l-red-600 flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <div class="flex items-center gap-3">
-                <span class="badge bg-red-100 text-red-700 font-extrabold text-sm">${r.blood_group}</span>
-                <h3 class="text-lg font-bold text-slate-900">Hospital: ${r.hospital_name}</h3>
-                <span class="badge ${r.priority === 'critical' ? 'badge-critical' : 'badge-urgent'}">${r.priority}</span>
+        container.innerHTML = requests.map(r => {
+          let actionHtml = '';
+          if (r.my_status === 'accepted') {
+            actionHtml = `
+              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                <span>✓</span> Request Accepted
+              </span>
+            `;
+          } else if (r.my_status === 'rejected') {
+            actionHtml = `
+              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                <span>✕</span> Declined
+              </span>
+            `;
+          } else {
+            actionHtml = `
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="acceptRequest(${r.id})" class="btn-emergency text-xs py-2 px-3 font-bold rounded-lg shadow-sm flex items-center gap-1">
+                  <span>✓</span> Accept
+                </button>
+                <button type="button" onclick="rejectRequest(${r.id})" class="btn-outline text-xs py-2 px-3 font-semibold text-rose-700 border-rose-300 hover:bg-rose-50 rounded-lg flex items-center gap-1">
+                  <span>✕</span> Reject
+                </button>
               </div>
-              <p class="text-sm text-slate-600 mt-1">Units Required: <b>${r.units_required}</b> • Needed by: <b>${formatDate(r.required_by)}</b></p>
-            </div>
+            `;
+          }
 
-            <div class="flex items-center gap-3">
-              <button onclick="acceptRequest(${r.id})" class="btn-emergency text-xs py-2 px-4">
-                ✓ Accept Emergency Request
-              </button>
+          return `
+            <div class="glass-card p-6 border-l-4 border-l-red-600 flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <div class="flex items-center gap-3">
+                  <span class="badge bg-red-100 text-red-700 font-extrabold text-sm">${r.blood_group}</span>
+                  <h3 class="text-lg font-bold text-slate-900">Hospital: ${r.hospital_name}</h3>
+                  <span class="badge ${r.priority === 'critical' ? 'badge-critical' : 'badge-urgent'}">${r.priority}</span>
+                </div>
+                <p class="text-sm text-slate-600 mt-1">Units Required: <b>${r.units_required}</b> • Needed by: <b>${formatDate(r.required_by)}</b></p>
+              </div>
+
+              <div class="flex items-center gap-3">
+                ${actionHtml}
+              </div>
             </div>
-          </div>
-        `).join('');
+          `;
+        }).join('');
 
       } catch (e) {
         console.error(e);
@@ -159,19 +190,30 @@
 
     async function acceptRequest(reqId) {
       try {
-        // Fetch matches for this request to get match_id
-        const matchesRes = await api.get(`/blood-requests/${reqId}/matches`);
-        if (matchesRes && matchesRes.data && matchesRes.data.matches && matchesRes.data.matches.length > 0) {
-          const firstMatch = matchesRes.data.matches[0];
-          const res = await api.post(`/matches/${firstMatch.match_id}/accept`);
-          if (res && res.success) {
-            showToast('Thank you! Request accepted and requester notified.', 'success');
-            loadDonorDashboard();
-          }
+        const res = await api.post(`/blood-requests/${reqId}/accept`);
+        if (res && res.success) {
+          showToast('Thank you! Request accepted and requester notified.', 'success');
+          loadDonorDashboard();
         } else {
-          showToast('Request match accepted successfully', 'success');
+          showToast(res ? res.message : 'Could not accept request', 'error');
         }
-      } catch (e) {}
+      } catch (e) {
+        showToast(`Failed to accept request: ${e.message}`, 'error');
+      }
+    }
+
+    async function rejectRequest(reqId) {
+      try {
+        const res = await api.post(`/blood-requests/${reqId}/reject`);
+        if (res && res.success) {
+          showToast('Emergency request declined.', 'info');
+          loadDonorDashboard();
+        } else {
+          showToast(res ? res.message : 'Could not decline request', 'error');
+        }
+      } catch (e) {
+        showToast(`Failed to decline request: ${e.message}`, 'error');
+      }
     }
   </script>
 </body>

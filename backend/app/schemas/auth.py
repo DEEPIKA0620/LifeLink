@@ -18,10 +18,10 @@ class UserRegisterRequest(BaseModel):
     email: EmailStr
     phone: str = Field(..., min_length=8, max_length=20)
     password: str = Field(..., min_length=6)
-    confirm_password: str
+    confirm_password: Optional[str] = None
     role: str = Field(..., description="patient, donor, hospital, pharmacy")
-    address: str
-    city: str
+    address: Optional[str] = ""
+    city: Optional[str] = "Bangalore"
     latitude: Optional[float] = 0.0
     longitude: Optional[float] = 0.0
 
